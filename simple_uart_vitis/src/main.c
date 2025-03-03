@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <string.h>     // For strlen() and strtok()
+#include <string.h>     // For strlen(), strtok(), memset()
 #include <stdlib.h>     // For atoi()
 #include "xparameters.h"
 #include "xuartps.h"
@@ -12,10 +12,11 @@ static XUartPs UartPs0;
 // Define buffer sizes
 #define RX_BUFFER_SIZE 100
 #define TX_BUFFER_SIZE 100
+#define ACC_BUFFER_SIZE 512  // Accumulation buffer to hold the complete CSV stream
 
 int main()
 {
-    // Initialize the platform (this enables caches, etc.)
+    // Initialize the platform (enables caches, etc.)
     init_platform();
 
     // === UART0 Initialization (Data Transfer Port) ===
@@ -25,82 +26,79 @@ int main()
         xil_printf("UART0 Config Error.\n\r");
         return XST_FAILURE;
     }
-    // Initialize the UART peripheral with the config parameters.
     XUartPs_CfgInitialize(&UartPs0, Config0, Config0->BaseAddress);
-    // Set the baud rate to 115200.
     XUartPs_SetBaudRate(&UartPs0, 115200);
 
-    // Debug message via xil_printf (which sends via the USB-UART bridge)
     xil_printf("UART Data Transfer Initialized. Waiting for CSV data...\n\r");
 
     // === Buffers for Data Processing ===
-    // rx_buffer will store the incoming CSV string.
-    // tx_buffer will store the formatted result to be sent back.
-    u8 rx_buffer[RX_BUFFER_SIZE];
-    u8 tx_buffer[TX_BUFFER_SIZE];
-    // An array to store up to 10 numbers parsed from the CSV.
-    int num_array[10];
+    u8 rx_buffer[RX_BUFFER_SIZE];    // Temporary buffer for incoming data chunks
+    u8 tx_buffer[TX_BUFFER_SIZE];    // Buffer for the result string to be sent back
+    char acc_buffer[ACC_BUFFER_SIZE]; // Accumulation buffer for complete CSV stream
+    int acc_index = 0;                // Current position in the accumulation buffer
+    int num_array[50];                // Array to hold parsed numbers (size is arbitrary, adjust as needed)
     int num_count = 0;
 
     // === Main Loop ===
-    // Continuously wait for data, process it, and send back the result.
     while (1) {
-        // Attempt to receive up to RX_BUFFER_SIZE-1 bytes over UART0.
+        // Receive up to RX_BUFFER_SIZE-1 bytes over UART0
         int received = XUartPs_Recv(&UartPs0, rx_buffer, RX_BUFFER_SIZE - 1);
 
         if (received > 0) {
-            // Null-terminate the received string.
-            rx_buffer[received] = '\0';
+            // Process each received byte
+            for (int i = 0; i < received; i++) {
+                char ch = rx_buffer[i];
+                // Append character to accumulation buffer if there is room
+                if (acc_index < ACC_BUFFER_SIZE - 1) {
+                    acc_buffer[acc_index++] = ch;
+                }
+                // Check for newline ('\n') which marks end of stream
+                if (ch == '\n') {
+                    // Null-terminate the accumulation buffer
+                    acc_buffer[acc_index] = '\0';
+                    xil_printf("Full CSV Received: %s\n\r", acc_buffer);
 
-//            // (Optional) Remove a trailing newline if present.
-//            if (rx_buffer[received - 1] == '\n') {
-//                rx_buffer[received - 1] = '\0';
-//            }
+                    // === Parse the CSV Data into an Integer Array ===
+                    // Use comma and newline as delimiters
+                    char *token = strtok(acc_buffer, ",\n\r");
+                    num_count = 0;
+                    while (token != NULL) {
+                        num_array[num_count++] = atoi(token);
+                        token = strtok(NULL, ",\n\r");
+                    }
 
-            // Debug print of the received data (this goes out via xil_printf)
-            xil_printf("Received: %s\n\r", rx_buffer);
+                    // === Perform the Simple Algorithm: Add 10 to Each Number ===
+                    for (int j = 0; j < num_count; j++) {
+                        num_array[j] += 10;
+                    }
 
-            // === Parse CSV Data into an Integer Array ===
-            // Tokenize the received string using comma and newline as delimiters.
-            char *token = strtok((char *)rx_buffer, ",\n\r");
-            num_count = 0;
-            while (token != NULL && num_count < 10) {
-                // Convert each token to an integer.
-                num_array[num_count++] = atoi(token);
-                token = strtok(NULL, ",\n\r");
+                    // === Format the Result as a CSV String ===
+                    int tx_len = 0;
+                    for (int j = 0; j < num_count; j++) {
+                        tx_len += sprintf((char *)tx_buffer + tx_len, "%d,", num_array[j]);
+                    }
+                    // Replace the last comma with a newline and null-terminate
+                    if (tx_len > 0) {
+                        tx_buffer[tx_len - 1] = '\n';
+                        tx_buffer[tx_len] = '\0';
+                    } else {
+                        strcpy((char *)tx_buffer, "\n");
+                    }
+
+                    // === Send the Modified CSV String Back via UART0 ===
+                    XUartPs_Send(&UartPs0, tx_buffer, strlen((char *)tx_buffer));
+                    while (XUartPs_IsSending(&UartPs0)) {
+                        // Spin until transmission completes
+                    }
+                    xil_printf("Sent: %s\n\r", tx_buffer);
+
+                    // Clear the accumulation buffer for the next complete CSV stream
+                    memset(acc_buffer, 0, ACC_BUFFER_SIZE);
+                    acc_index = 0;
+                }
             }
-
-            // === Simple Algorithm: Add 10 to Each Number ===
-            for (int i = 0; i < num_count; i++) {
-                num_array[i] += 10;
-            }
-
-            // === Format the Result as a CSV String ===
-            int tx_len = 0;
-            for (int i = 0; i < num_count; i++) {
-                // Append each modified number followed by a comma.
-                tx_len += sprintf((char *)tx_buffer + tx_len, "%d,", num_array[i]);
-            }
-            // Replace the last comma with a newline and null-terminate the string.
-            if (tx_len > 0) {
-                tx_buffer[tx_len - 1] = '\n';
-                tx_buffer[tx_len] = '\0';
-            } else {
-                // If no data was parsed, send just a newline.
-                strcpy((char *)tx_buffer, "\n");
-            }
-
-            // === Send the Modified CSV String Back via UART0 ===
-            XUartPs_Send(&UartPs0, tx_buffer, strlen((char *)tx_buffer));
-            while (XUartPs_IsSending(&UartPs0)) {
-                // Wait until the transmission is complete.
-            }
-            xil_printf("Sent: %s\n\r", tx_buffer);
-
-            // Clear the receive buffer for the next iteration.
-            memset(rx_buffer, 0, RX_BUFFER_SIZE);
         }
-        // Add a small delay (1ms) to prevent overloading the UART buffer.
+        // Small delay to prevent busy waiting (1 ms)
         usleep(1000);
     }
 
