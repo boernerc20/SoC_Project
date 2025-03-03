@@ -1,0 +1,270 @@
+
+*** Running vivado
+    with args -log design_1_wrapper.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source design_1_wrapper.tcl
+
+
+****** Vivado v2023.2 (64-bit)
+  **** SW Build 4029153 on Fri Oct 13 20:13:54 MDT 2023
+  **** IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+  **** SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source design_1_wrapper.tcl -notrace
+create_project: Time (s): cpu = 00:00:10 ; elapsed = 00:00:10 . Memory (MB): peak = 1435.797 ; gain = 131.840 ; free physical = 43508 ; free virtual = 59936
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/Vivado/2023.2/data/ip'.
+Command: read_checkpoint -auto_incremental -incremental /home/boernerc20/Documents/Vivado/simple_uart/simple_uart.srcs/utils_1/imports/synth_1/design_1_wrapper.dcp
+INFO: [Vivado 12-5825] Read reference checkpoint from /home/boernerc20/Documents/Vivado/simple_uart/simple_uart.srcs/utils_1/imports/synth_1/design_1_wrapper.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
+Command: synth_design -top design_1_wrapper -part xc7z020clg484-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7z020'
+INFO: [Device 21-403] Loading part xc7z020clg484-1
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 4 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 673246
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 2222.676 ; gain = 412.629 ; free physical = 42487 ; free virtual = 58919
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'design_1_wrapper' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/hdl/design_1_wrapper.v:13]
+INFO: [Synth 8-6157] synthesizing module 'design_1' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:13]
+INFO: [Synth 8-6157] synthesizing module 'design_1_processing_system7_0_1' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.runs/synth_1/.Xil/Vivado-672669-CHRISPC/realtime/design_1_processing_system7_0_1_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'design_1_processing_system7_0_1' (0#1) [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.runs/synth_1/.Xil/Vivado-672669-CHRISPC/realtime/design_1_processing_system7_0_1_stub.v:6]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARVALID' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWVALID' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_BREADY' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_RREADY' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_WLAST' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_WVALID' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARID' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWID' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_WID' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARBURST' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARLOCK' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARSIZE' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWBURST' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWLOCK' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWSIZE' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARPROT' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWPROT' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARADDR' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWADDR' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_WDATA' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARCACHE' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARLEN' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_ARQOS' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWCACHE' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWLEN' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_AWQOS' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'M_AXI_GP0_WSTRB' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'FCLK_RESET0_N' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'MIO' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_CAS_n' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_CKE' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_Clk_n' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_Clk' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_CS_n' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_DRSTB' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_ODT' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_RAS_n' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_WEB' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_BankAddr' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_Addr' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_VRN' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_VRP' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_DM' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_DQ' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_DQS_n' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'DDR_DQS' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'PS_SRSTB' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'PS_CLK' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7071] port 'PS_PORB' of module 'design_1_processing_system7_0_1' is unconnected for instance 'processing_system7_0' [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+WARNING: [Synth 8-7023] instance 'processing_system7_0' of module 'design_1_processing_system7_0_1' has 62 connections declared, but only 13 given [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:19]
+INFO: [Synth 8-6155] done synthesizing module 'design_1' (0#1) [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/synth/design_1.v:13]
+INFO: [Synth 8-6155] done synthesizing module 'design_1_wrapper' (0#1) [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/hdl/design_1_wrapper.v:13]
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 2296.613 ; gain = 486.566 ; free physical = 42402 ; free virtual = 58834
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 2311.457 ; gain = 501.410 ; free physical = 42398 ; free virtual = 58830
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 2311.457 ; gain = 501.410 ; free physical = 42398 ; free virtual = 58830
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2311.457 ; gain = 0.000 ; free physical = 42396 ; free virtual = 58829
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/ip/design_1_processing_system7_0_1/design_1_processing_system7_0_1/design_1_processing_system7_0_1_in_context.xdc] for cell 'design_1_i/processing_system7_0'
+Finished Parsing XDC File [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.gen/sources_1/bd/design_1/ip/design_1_processing_system7_0_1/design_1_processing_system7_0_1/design_1_processing_system7_0_1_in_context.xdc] for cell 'design_1_i/processing_system7_0'
+Parsing XDC File [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.runs/synth_1/dont_touch.xdc]
+Finished Parsing XDC File [/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.runs/synth_1/dont_touch.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2384.395 ; gain = 0.000 ; free physical = 42372 ; free virtual = 58804
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2384.430 ; gain = 0.000 ; free physical = 42372 ; free virtual = 58804
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42396 ; free virtual = 58829
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z020clg484-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42396 ; free virtual = 58829
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+Applied set_property KEEP_HIERARCHY = SOFT for design_1_i. (constraint file  auto generated constraint).
+Applied set_property KEEP_HIERARCHY = SOFT for design_1_i/processing_system7_0. (constraint file  auto generated constraint).
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42396 ; free virtual = 58829
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42396 ; free virtual = 58830
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 220 (col length:60)
+BRAMs: 280 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42400 ; free virtual = 58837
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:13 ; elapsed = 00:00:13 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42388 ; free virtual = 58823
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:13 ; elapsed = 00:00:13 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42388 ; free virtual = 58823
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:13 ; elapsed = 00:00:13 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42388 ; free virtual = 58823
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42411 ; free virtual = 58846
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42405 ; free virtual = 58840
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42397 ; free virtual = 58832
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42397 ; free virtual = 58832
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42397 ; free virtual = 58832
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42397 ; free virtual = 58832
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+--------------------------------+----------+
+|      |BlackBox name                   |Instances |
++------+--------------------------------+----------+
+|1     |design_1_processing_system7_0_1 |         1|
++------+--------------------------------+----------+
+
+Report Cell Usage: 
++------+------------------------------+------+
+|      |Cell                          |Count |
++------+------------------------------+------+
+|1     |design_1_processing_system7_0 |     1|
++------+------------------------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42397 ; free virtual = 58832
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 1 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:14 ; elapsed = 00:00:14 . Memory (MB): peak = 2384.430 ; gain = 501.410 ; free physical = 42397 ; free virtual = 58832
+Synthesis Optimization Complete : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 2384.430 ; gain = 574.383 ; free physical = 42397 ; free virtual = 58832
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:00 . Memory (MB): peak = 2384.430 ; gain = 0.000 ; free physical = 42397 ; free virtual = 58832
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2384.430 ; gain = 0.000 ; free physical = 42699 ; free virtual = 59134
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: 51f98caf
+INFO: [Common 17-83] Releasing license: Synthesis
+27 Infos, 51 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:20 ; elapsed = 00:00:19 . Memory (MB): peak = 2384.430 ; gain = 926.852 ; free physical = 42699 ; free virtual = 59134
+INFO: [Common 17-2834] synth_design peak Physical Memory [PSS] (MB): overall = 1990.010; main = 1663.741; forked = 378.786
+INFO: [Common 17-2834] synth_design peak Virtual Memory [VSS] (MB): overall = 3342.852; main = 2352.383; forked = 990.469
+INFO: [Common 17-1381] The checkpoint '/home/boernerc20/Documents/Vivado/simple_uart/simple_uart.runs/synth_1/design_1_wrapper.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file design_1_wrapper_utilization_synth.rpt -pb design_1_wrapper_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Mon Feb 24 17:23:04 2025...
