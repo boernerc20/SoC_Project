@@ -1,0 +1,12 @@
+ESN core:
+
+eq1: update the reservoir state
+Variables: data_in (40 inputs/sample * 6400 samples), W_in (8x40), W_x (8x8)
+Output:    state (8x1), 
+function:  state = tanh(W_in * data_in + W_x * state_pre)
+		   state_extended(48,1)={data_in;state};  compared with state_tosave.dat file
+
+eq2: generate the ESN core output
+Variables: W_out (4x48), data_in, state(not state_pre)
+Output:    data_out (4 outputs/sample * 6400 samples)
+function:  data_out = W_out * state_extended;    compared with data_out.dat file
