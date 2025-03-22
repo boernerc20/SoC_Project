@@ -158,13 +158,13 @@ void update_state(float *W_in, float *dataIn, float *W_x, float *state_pre, floa
     }
 }
 
-// Form extended state vector: state_extended = { dataIn; state }
+// Form extended state vector: state_extended = { state; dataIn }
 void form_state_extended(float *dataIn, float *state, float *state_extended) {
-    for (int i = 0; i < NUM_INPUTS; i++) {
-        state_extended[i] = dataIn[i];
-    }
     for (int i = 0; i < NUM_NEURONS; i++) {
-        state_extended[NUM_INPUTS + i] = state[i];
+        state_extended[i] = state[i];
+    }
+    for (int i = 0; i < NUM_INPUTS; i++) {
+        state_extended[NUM_NEURONS + i] = dataIn[i];
     }
 }
 
@@ -321,11 +321,12 @@ int main(void)
             // And then form the extended state:
             //     state_extended = { dataIn; state }
 
-            process_data_in(dataIn);
-            process_w_in(wIn);
-            process_w_x(wX);
+//            process_data_in(dataIn);
+//            process_w_in(wIn);
+//            process_w_x(wX);
 
             // Update reservoir state:
+//            debug_print("Reservoir state (state):\n\r");
             update_state(wIn, dataIn, wX, state_pre, state);
 
             // (For subsequent samples, you might copy 'state' into 'state_pre'.)
@@ -335,22 +336,22 @@ int main(void)
 
             // Debug print the state vector and then the extended state vector.
             debug_print("Reservoir state (state):\n\r");
-            char stateBuf[256] = "";
             for (int i = 0; i < NUM_NEURONS; i++) {
                 char num[32];
-                sprintf(num, "%f\n\r", state[i]);
-                strcat(stateBuf, num);
+                sprintf(num, "state[%d] = %f\n\r", i, state[i]);
+                debug_print(num);
+                // Optionally, add a small delay:
+                usleep(50000);  // 50 ms delay
             }
-            debug_print(stateBuf);
 
-//            debug_print("Extended state vector (dataIn concatenated with state):\n\r");
-//            char extBuf[512] = "";
-//            for (int i = 0; i < NUM_INPUTS + NUM_NEURONS; i++) {
-//                char num[32];
-//                sprintf(num, "%f\n\r", state_extended[i]);
-//                strcat(extBuf, num);
-//            }
-//            debug_print(extBuf);
+            // Extended State Vector printing:
+            debug_print("Extended state vector (dataIn concatenated with state):\n\r");
+            for (int i = 0; i < NUM_INPUTS + NUM_NEURONS; i++) {
+                char num[32];
+                sprintf(num, "state_extended[%d] = %f\n\r", i, state_extended[i]);
+                debug_print(num);
+                usleep(50000);
+            }
 
             // Then you can move to the next processing step (e.g. computing the output).
             break; // or continue as needed
