@@ -11,6 +11,10 @@ Received header: ID=WX______, size=601 bytes
 Complete file received for ID WX______
 Parsed W_x: expected 64 samples, got 64
 W_x file ready.
+Received header: ID=WOUT____, size=2063 bytes
+Complete file received for ID WOUT____
+Parsed W_out: expected 192 samples, got 192
+W_out file ready.
 All files received. Proceeding to echo state network computation.Reservoir state (state):
 state[0] = 0.001866
 state[1] = 0.003661
@@ -20,7 +24,7 @@ state[4] = 0.053578
 state[5] = 0.011186
 state[6] = -0.110369
 state[7] = 0.112296
-Extended state vector (dataIn concatenated with state):
+Extended state vector (state concatenated with dataIn):
 state_extended[0] = 0.001866
 state_extended[1] = 0.003661
 state_extended[2] = -0.025588
@@ -69,3 +73,8 @@ state_extended[44] = 0.009621
 state_extended[45] = 0.006950
 state_extended[46] = 0.004123
 state_extended[47] = 0.001417
+ESN output (data_out):
+data_out[0] = -0.174513
+data_out[1] = 1.482142
+data_out[2] = -1.611896
+data_out[3] = 0.866513

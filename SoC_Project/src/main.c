@@ -18,10 +18,11 @@ static XUartPs UartDebug;
 #define HEADER_SIZE 16
 #define TIMEOUT_USEC 500000     // 500 ms timeout
 
-// Expected sample counts (adjust as needed)
+// Expected sample counts
 #define DATAIN_SAMPLE_COUNT 40    // one_sample.dat
 #define WIN_SAMPLE_COUNT (8 * 40)   // W_in: 320 samples
 #define WX_SAMPLE_COUNT  (8 * 8)    // W_x: 64 samples
+#define WOUT_SAMPLE_COUNT (4 * (40 + 8))  // W_out: 4 x 48 = 192 samples
 
 // Define dimensions for the echo state update:
 #define NUM_INPUTS 40      // same as DATAIN_SAMPLE_COUNT
@@ -29,7 +30,7 @@ static XUartPs UartDebug;
 
 // Header structure (16 bytes)
 typedef struct {
-    char id[8];       // e.g., "DATAIN", "WIN____", "WX_____"
+    char id[8];       // e.g., "DATAIN", "WIN____", "WX_____", "WOUT____"
     uint32_t size;    // File size in bytes (assumed in host order)
     char reserved[4]; // Reserved
 } FileHeader;
@@ -87,6 +88,15 @@ void process_w_x(float matrix[WX_SAMPLE_COUNT]) {
     }
 }
 
+void process_w_out(float matrix[WOUT_SAMPLE_COUNT]) {
+    debug_print("Processing W_out matrix (one column per element):\n\r");
+    for (int i = 0; i < WOUT_SAMPLE_COUNT; i++) {
+        char buf[64];
+        sprintf(buf, "W_out[%d]: %f\n\r", i, matrix[i]);
+        debug_print(buf);
+    }
+}
+
 // Utility: Receive exactly n bytes into dest.
 int receive_bytes(u8 *dest, int n) {
     int received = 0;
@@ -135,24 +145,21 @@ int receive_file_data(char *buffer, uint32_t fileSize) {
 }
 
 // ---- Echo State Network Functions ----
-// Update reservoir state: state = tanh(W_in*dataIn + W_x*state_pre)
+// Update reservoir state: state = tanh(W_in * dataIn + W_x * state_pre)
 void update_state(float *W_in, float *dataIn, float *W_x, float *state_pre, float *state) {
     float temp1[NUM_NEURONS] = {0};  // for W_in * dataIn
     float temp2[NUM_NEURONS] = {0};  // for W_x * state_pre
 
-    // Multiply W_in (8x40) by dataIn (40x1)
     for (int i = 0; i < NUM_NEURONS; i++) {
         for (int j = 0; j < NUM_INPUTS; j++) {
             temp1[i] += W_in[i * NUM_INPUTS + j] * dataIn[j];
         }
     }
-    // Multiply W_x (8x8) by state_pre (8x1)
     for (int i = 0; i < NUM_NEURONS; i++) {
         for (int j = 0; j < NUM_NEURONS; j++) {
             temp2[i] += W_x[i * NUM_NEURONS + j] * state_pre[j];
         }
     }
-    // Compute new state = tanh(temp1 + temp2)
     for (int i = 0; i < NUM_NEURONS; i++) {
         state[i] = tanh(temp1[i] + temp2[i]);
     }
@@ -160,11 +167,25 @@ void update_state(float *W_in, float *dataIn, float *W_x, float *state_pre, floa
 
 // Form extended state vector: state_extended = { state; dataIn }
 void form_state_extended(float *dataIn, float *state, float *state_extended) {
+    // Note: now we want the first 8 elements to be the state,
+    // followed by the 40 dataIn samples.
     for (int i = 0; i < NUM_NEURONS; i++) {
         state_extended[i] = state[i];
     }
     for (int i = 0; i < NUM_INPUTS; i++) {
         state_extended[NUM_NEURONS + i] = dataIn[i];
+    }
+}
+
+// Compute ESN output: data_out = W_out * state_extended
+// W_out is 4x48 (4 rows, 48 columns), state_extended is 48x1, data_out is 4x1.
+void compute_output(float *W_out, float *state_extended, float *data_out) {
+    int total = NUM_INPUTS + NUM_NEURONS; // 48
+    for (int i = 0; i < 4; i++) {
+        data_out[i] = 0;
+        for (int j = 0; j < total; j++) {
+            data_out[i] += W_out[i * total + j] * state_extended[j];
+        }
     }
 }
 
@@ -196,27 +217,28 @@ int main(void)
     float dataIn[DATAIN_SAMPLE_COUNT];
     float wIn[WIN_SAMPLE_COUNT];
     float wX[WX_SAMPLE_COUNT];
+    float wOut[WOUT_SAMPLE_COUNT];
 
     // Variables for echo state network computation.
-    float state_pre[NUM_NEURONS] = {0}; // initial reservoir state (e.g., zeros)
+    float state_pre[NUM_NEURONS] = {0}; // initial reservoir state (zeros)
     float state[NUM_NEURONS];
     float state_extended[NUM_INPUTS + NUM_NEURONS];
+    float data_out[4];
 
     // Temporary buffer for file reception.
     char fileBuffer[FILE_BUFFER_SIZE];
 
     // Flags to indicate successful receipt of each file.
-    int dataInReady = 0, wInReady = 0, wXReady = 0;
+    int dataInReady = 0, wInReady = 0, wXReady = 0, wOutReady = 0;
 
     // Main loop: receive files one by one.
     while (1) {
-        // --- Receive Header (16 bytes) ---
         u8 headerBuf[HEADER_SIZE];
         receive_bytes(headerBuf, HEADER_SIZE);
         FileHeader header;
         memcpy(&header, headerBuf, HEADER_SIZE);
         trim_header_id(header.id);
-        uint32_t fileSize = header.size;  // Convert if necessary
+        uint32_t fileSize = header.size;
         {
             char dbg[128];
             sprintf(dbg, "Received header: ID=%.8s, size=%u bytes\n\r", header.id, fileSize);
@@ -226,22 +248,14 @@ int main(void)
             debug_print("Error: File size exceeds buffer capacity!\n\r");
             continue;
         }
-        // --- Receive file data (plus EOF marker) ---
         int bytesReceived = receive_file_data(fileBuffer, fileSize);
         {
             char dbg[128];
             sprintf(dbg, "Complete file received for ID %.8s\n\r", header.id);
             debug_print(dbg);
         }
-        // For debugging, optionally print file content.
-        // debug_print("File content:\n\r");
-        // debug_print(fileBuffer);
-        // debug_print("\n\r");
-
-        // Wait briefly before reading the next header.
         usleep(500000);
 
-        // --- Parse file content based on header ID ---
         if (strncmp(header.id, "DATAIN", 6) == 0) {
             int count = 0;
             char *token = strtok(fileBuffer, " ,\n\r");
@@ -305,59 +319,79 @@ int main(void)
                 debug_print("Error parsing W_x.\n\r");
             }
         }
+        else if (strncmp(header.id, "WOUT____", 8) == 0) {
+            int count = 0;
+            char *token = strtok(fileBuffer, " ,\n\r");
+            while (token != NULL && count < WOUT_SAMPLE_COUNT) {
+                if (strlen(token) > 0) {
+                    wOut[count++] = strtof(token, NULL);
+                }
+                token = strtok(NULL, " ,\n\r");
+            }
+            {
+                char dbg[128];
+                sprintf(dbg, "Parsed W_out: expected %d samples, got %d\n\r", WOUT_SAMPLE_COUNT, count);
+                debug_print(dbg);
+            }
+            if (count == WOUT_SAMPLE_COUNT) {
+                wOutReady = 1;
+                debug_print("W_out file ready.\n\r");
+            } else {
+                debug_print("Error parsing W_out.\n\r");
+            }
+        }
         else {
             char unknown[64];
             sprintf(unknown, "Unknown file ID received: %.8s\n\r", header.id);
             debug_print(unknown);
         }
 
-        // If all three files have been received, break out of the file reception loop.
-        if (dataInReady && wInReady && wXReady) {
+        // If all four files have been received, break out of the loop.
+        if (dataInReady && wInReady && wXReady && wOutReady) {
             debug_print("All files received. Proceeding to echo state network computation...\n\r");
-            // --- Perform echo state network computation ---
-            // Here, dataIn is a 40-element vector, wIn is an 8x40 matrix, and wX is an 8x8 matrix.
-            // We need to update the reservoir state as:
-            //     state = tanh(W_in * dataIn + W_x * state_pre)
-            // And then form the extended state:
-            //     state_extended = { dataIn; state }
-
-//            process_data_in(dataIn);
-//            process_w_in(wIn);
-//            process_w_x(wX);
-
-            // Update reservoir state:
-//            debug_print("Reservoir state (state):\n\r");
-            update_state(wIn, dataIn, wX, state_pre, state);
-
-            // (For subsequent samples, you might copy 'state' into 'state_pre'.)
-
-            // Form extended state vector: concatenating dataIn and state.
-            form_state_extended(dataIn, state, state_extended);
-
-            // Debug print the state vector and then the extended state vector.
-            debug_print("Reservoir state (state):\n\r");
-            for (int i = 0; i < NUM_NEURONS; i++) {
-                char num[32];
-                sprintf(num, "state[%d] = %f\n\r", i, state[i]);
-                debug_print(num);
-                // Optionally, add a small delay:
-                usleep(50000);  // 50 ms delay
-            }
-
-            // Extended State Vector printing:
-            debug_print("Extended state vector (dataIn concatenated with state):\n\r");
-            for (int i = 0; i < NUM_INPUTS + NUM_NEURONS; i++) {
-                char num[32];
-                sprintf(num, "state_extended[%d] = %f\n\r", i, state_extended[i]);
-                debug_print(num);
-                usleep(50000);
-            }
-
-            // Then you can move to the next processing step (e.g. computing the output).
-            break; // or continue as needed
+            break;
         }
     }
 
+    // --- First part: Compute the reservoir state ---
+    // Here, dataIn (40 elements), wIn (8x40), and wX (8x8) are used.
+    update_state(wIn, dataIn, wX, state_pre, state);
+
+    // For this first sample, state_pre remains zeros (already set above).
+    // Debug print the reservoir state:
+    debug_print("Reservoir state (state):\n\r");
+    for (int i = 0; i < NUM_NEURONS; i++) {
+        char buf[64];
+        sprintf(buf, "state[%d] = %f\n\r", i, state[i]);
+        debug_print(buf);
+        usleep(50000);
+    }
+
+    // Form the extended state vector: now defined as { state; dataIn }
+    form_state_extended(dataIn, state, state_extended);
+
+    debug_print("Extended state vector (state concatenated with dataIn):\n\r");
+    for (int i = 0; i < NUM_INPUTS + NUM_NEURONS; i++) {
+        char buf[64];
+        sprintf(buf, "state_extended[%d] = %f\n\r", i, state_extended[i]);
+        debug_print(buf);
+        usleep(50000);
+    }
+
+    // --- Second part: Compute the ESN output ---
+    // Compute data_out = W_out * state_extended, where W_out is 4x48 and state_extended is 48x1.
+//    float data_out[4];
+    compute_output(wOut, state_extended, data_out);
+
+    debug_print("ESN output (data_out):\n\r");
+    for (int i = 0; i < 4; i++) {
+        char buf[64];
+        sprintf(buf, "data_out[%d] = %f\n\r", i, data_out[i]);
+        debug_print(buf);
+        usleep(50000);
+    }
+
+    // Continue with further processing as needed...
     cleanup_platform();
     return 0;
 }
