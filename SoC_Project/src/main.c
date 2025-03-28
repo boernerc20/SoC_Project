@@ -1,3 +1,31 @@
+/*******************************************************************************
+ * File: main.c
+ * Author: Christopher Boerner
+ * Date: 03-27-2025
+ *
+ * Description:
+ *   This file implements an Echo State Network (ESN) core for a Xilinx ZedBoard.
+ *   It handles UART communication for receiving matrix files (WIN, WX, WOUT) and
+ *   a data input file (DATAIN). The code parses these files, populates the
+ *   corresponding arrays, and computes the ESN output. The results are output
+ *   via a debug UART.
+ *
+ *   Expected Files:
+ *     - DATAIN file: 40 float values.
+ *     - WIN file: 320 float values.
+ *     - WX file:  64 float values.
+ *     - WOUT file: 192 float values.
+ *
+ *   Operation:
+ *     1. Wait for matrix files via UART0.
+ *     2. Parse and store the matrix values into arrays.
+ *     3. Wait for the DATAIN file.
+ *     4. Compute the reservoir state, form the extended state, and calculate
+ *        the ESN output.
+ *     5. Output the results via UART1.
+ *
+ ******************************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,14 +39,14 @@
 
 /*--- Definitions ---*/
 #define RX_BUFFER_SIZE 100
-#define FILE_BUFFER_SIZE 4096   // Adjust as needed
+#define FILE_BUFFER_SIZE 4096
 #define HEADER_SIZE 16
 
 // Expected sample counts for each file:
-#define DATAIN_SAMPLE_COUNT 40         // one_sample.dat
-#define WIN_SAMPLE_COUNT (8 * 40)        // w_in.dat: 320 samples
-#define WX_SAMPLE_COUNT  (8 * 8)         // w_x.dat: 64 samples
-#define WOUT_SAMPLE_COUNT (4 * (40 + 8))   // w_out.dat: 192 samples
+#define DATAIN_SAMPLE_COUNT 40
+#define WIN_SAMPLE_COUNT (8 * 40)         // w_in.dat: 320 elements
+#define WX_SAMPLE_COUNT  (8 * 8)          // w_x.dat: 64 elements
+#define WOUT_SAMPLE_COUNT (4 * (40 + 8))  // w_out.dat: 192 elements
 
 // ESN dimensions:
 #define NUM_INPUTS 40      // same as DATAIN_SAMPLE_COUNT
@@ -30,18 +58,12 @@ typedef struct {
     char reserved[4]; // Reserved
 } FileHeader;
 
-/*--- Global UART Instances ---*/
+/*--- Global Variables ---*/
 static XUartPs UartData;
 static XUartPs UartDebug;
-
 static char dbg_buf[128];
 
-/*--- Unchanged Helper Functions (use your existing implementations) ---*/
-//void xil_printf(const char *msg) {
-//    XUartPs_Send(&UartDebug, (u8 *)msg, strlen(msg));
-//    while (XUartPs_IsSending(&UartDebug));
-//}
-
+/*--- Helper Functions ---*/
 void flush_uart() {
     u8 dummy[128];
     int r;
@@ -59,7 +81,7 @@ void trim_header_id(char *id) {
     }
 }
 
-// Utility: Receive exactly n bytes into dest.
+// Receive exactly n bytes into dest.
 int receive_bytes(u8 *dest, int n) {
     int received = 0;
     while (received < n) {
@@ -107,11 +129,7 @@ int receive_file_data(char *buffer, uint32_t fileSize) {
 }
 
 
-/*--- ESN and Processing Functions (unchanged, use your current versions) ---*/
-// update_state, form_state_extended, compute_output,
-// process_data_in, process_w_in, process_w_x, process_w_out, process_y_out
-// For brevity, these are assumed to be defined as in your current implementation.
-
+/*--- ESN Core Functions ---*/
 void update_state(float *W_in, float *dataIn, float *W_x, float *state_pre, float *state) {
     float temp1[NUM_NEURONS] = {0};
     float temp2[NUM_NEURONS] = {0};
@@ -149,6 +167,7 @@ void compute_output(float *W_out, float *state_extended, float *data_out) {
     }
 }
 
+/*--- Debugging Functions ---*/
 void process_data_in(float samples[DATAIN_SAMPLE_COUNT]) {
     xil_printf("Processing DATAIN file:\n\r");
     static char buf[64];
@@ -265,33 +284,42 @@ int main(void)
             state = STATE_READ_MATRIX_DATA;
             break;
             case STATE_READ_MATRIX_DATA:
-                {
+            		// Retrieve the file size from the header.
                     uint32_t fileSize = header.size;
+                    // Check if the file size exceeds the pre-allocated buffer size.
                     if (fileSize >= FILE_BUFFER_SIZE) {
                     	xil_printf("Error: Matrix file size exceeds buffer capacity!\n\r");
                         flush_uart();
                         state = STATE_WAIT_MATRIX_HEADER;
                         break;
                     }
+                    // Clear the fileBuffer before storing new file data.
                     memset(fileBuffer, 0, sizeof(fileBuffer));
+
+                    // Receive the file data (up to fileSize bytes) into fileBuffer.
                     receive_file_data(fileBuffer, fileSize);
                     usleep(500000);
 
+                    // Copy the 8-byte header ID into a temporary buffer and null-terminate it.
                     char id_str[9];
                     memcpy(id_str, header.id, 8);
                     id_str[8] = '\0';
-                    trim_header_id(id_str);
 
+                    // Remove any stray newline, carriage return, or space characters from the header ID.
+                    trim_header_id(id_str);
 
                     if (strncmp(header.id, "WIN_____", 8) == 0) {
                         int count = 0;
+                        // Tokenize the received file buffer using space, comma, newline, and carriage return as delimiters.
                         char *token = strtok(fileBuffer, " ,\n\r");
                         while (token != NULL && count < WIN_SAMPLE_COUNT) {
+                        	// If the token is non-empty, convert it to float and store it in the wIn array.
                             if (strlen(token) > 0) {
                                 wIn[count++] = strtof(token, NULL);
                             }
                             token = strtok(NULL, " ,\n\r");
                         }
+                        // Print the number of tokens parsed compared to the expected sample count.
                         sprintf(dbg_buf, "Parsed W_in: expected %d, got %d\n\r", WIN_SAMPLE_COUNT, count);
                         xil_printf(dbg_buf);
                         if (count == WIN_SAMPLE_COUNT) {
@@ -302,6 +330,7 @@ int main(void)
                             flush_uart();
                         }
                     }
+                    // Similar approach for the other two matrcies (will make this better soon)
                     else if (strncmp(header.id, "WX______", 8) == 0) {
                         int count = 0;
                         char *token = strtok(fileBuffer, " ,\n\r");
@@ -356,7 +385,6 @@ int main(void)
                     }
                     else
                         state = STATE_WAIT_MATRIX_HEADER;
-                }
                 break;
             case STATE_WAIT_DATAIN_HEADER:
                 // Now wait for a header with DATAIN.
