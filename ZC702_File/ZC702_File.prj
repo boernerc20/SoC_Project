@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?>
 <sdkproject:SdkProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdkproject="http://www.xilinx.com/sdkproject" name="ZC702_File" location="/home/boernerc20/Documents/Vivado/Workspace/ZC702_File" platform="/home/boernerc20/Documents/Vivado/Workspace/base_ps_wrapper_enet/export/base_ps_wrapper_enet/base_ps_wrapper_enet.xpfm" platformUID="xilinx:zc702::0.0(custom)" systemProject="ZC702_File_system" sysConfig="base_ps_wrapper_enet" runtime="cpp" cpu="standalone_ps7_cortexa9_0" cpuInstance="ps7_cortexa9_0" os="standalone" mssSignature="02e5f4686a3818b69cc61ab14e5dfcf9">
-  <configuration name="Debug" id="xilinx.gnu.armv7.exe.debug.1828283731" dirty="true">
+  <configuration name="Debug" id="xilinx.gnu.armv7.exe.debug.1828283731">
     <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
     <lastBuildOptions xsi:type="sdkproject:SdkOptions"/>
   </configuration>

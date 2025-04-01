@@ -56,6 +56,7 @@ def main():
         print("\nMain Menu:")
         print("1 - Send matrix file(s)")
         print("2 - Send DATAIN file")
+        print("3 - Perform ESN calculation on board")
         print("q - Quit")
 
         choice = input("Enter your choice: ").strip().lower()
@@ -86,6 +87,10 @@ def main():
                 print(f"File '{data_filename}' not found.")
                 data_filename = input("Please enter a valid DATAIN filename: ").strip()
             send_file_tcp(board_ip, board_port, data_filename, "DATAIN___")
+        
+        elif choice == '3':
+            # Send a tiny "command" file to the board with file_id = "CMD_ESN_"
+            send_file_tcp(board_ip, board_port, "cmd_esn.txt", "CMD_ESN_")
 
         elif choice == 'q':
             print("Exiting.")

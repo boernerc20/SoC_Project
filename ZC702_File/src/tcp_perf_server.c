@@ -28,7 +28,7 @@
 
 /*
  * Modifications by Christopher Boerner, Virginia Tech ECE, 2025.
- * - Commented out print_tcp_conn_stats, tcp_recv_perf_traffic, stats_buffer, tcp_conn_report,  (not using iperf)
+ * - Only using tcp_server_accept, start_application, and print_app_header from original code
  * - Added echo function for testing
  * - Changed tcp_server_accept function to work with file transferring
  */
@@ -39,207 +39,70 @@
 #include "tcp_file.h"
 
 extern struct netif server_netif;
-static struct tcp_pcb *c_pcb;
-static struct perf_stats server;
 
 void print_app_header(void)
 {
 	xil_printf("TCP server listening on port %d\r\n",
 			TCP_CONN_PORT);
-//#if LWIP_IPV6==1
-//	xil_printf("On Host: Run $iperf -V -c %s%%<interface> -i %d -t 300 -w 2M\r\n",
-//			inet6_ntoa(server_netif.ip6_addr[0]),
-//			INTERIM_REPORT_INTERVAL);
-//#else
-//	xil_printf("On Host: Run $iperf -c %s -i %d -t 300 -w 2M\r\n",
-//			inet_ntoa(server_netif.ip_addr),
-//			INTERIM_REPORT_INTERVAL);
-//#endif /* LWIP_IPV6 */
 }
-
-//static void print_tcp_conn_stats(void)
-//{
-//#if LWIP_IPV6==1
-//	xil_printf("[%3d] local %s port %d connected with ",
-//			server.client_id, inet6_ntoa(c_pcb->local_ip),
-//			c_pcb->local_port);
-//	xil_printf("%s port %d\r\n",inet6_ntoa(c_pcb->remote_ip),
-//			c_pcb->remote_port);
-//#else
-//	xil_printf("[%3d] local %s port %d connected with ",
-//			server.client_id, inet_ntoa(c_pcb->local_ip),
-//			c_pcb->local_port);
-//	xil_printf("%s port %d\r\n",inet_ntoa(c_pcb->remote_ip),
-//			c_pcb->remote_port);
-//#endif /* LWIP_IPV6 */
-//
-//	xil_printf("[ ID] Interval\t\tTransfer   Bandwidth\n\r");
-//}
-
-//static void stats_buffer(char* outString,
-//		double data, enum measure_t type)
-//{
-//	int conv = KCONV_UNIT;
-//	const char *format;
-//	double unit = 1024.0;
-//
-//	if (type == SPEED)
-//		unit = 1000.0;
-//
-//	while (data >= unit && conv <= KCONV_GIGA) {
-//		data /= unit;
-//		conv++;
-//	}
-//
-//	/* Fit data in 4 places */
-//	if (data < 9.995) { /* 9.995 rounded to 10.0 */
-//		format = "%4.2f %c"; /* #.## */
-//	} else if (data < 99.95) { /* 99.95 rounded to 100 */
-//		format = "%4.1f %c"; /* ##.# */
-//	} else {
-//		format = "%4.0f %c"; /* #### */
-//	}
-//	sprintf(outString, format, data, kLabel[conv]);
-//}
-
-
-/** The report function of a TCP server session */
-//static void tcp_conn_report(u64_t diff,
-//		enum report_type report_type)
-//{
-//	u64_t total_len;
-//	double duration, bandwidth = 0;
-//	char data[16], perf[16], time[64];
-//
-//	if (report_type == INTER_REPORT) {
-//		total_len = server.i_report.total_bytes;
-//	} else {
-//		server.i_report.last_report_time = 0;
-//		total_len = server.total_bytes;
-//	}
-//
-//	/* Converting duration from milliseconds to secs,
-//	 * and bandwidth to bits/sec .
-//	 */
-//	duration = diff / 1000.0; /* secs */
-//	if (duration)
-//		bandwidth = (total_len / duration) * 8.0;
-//
-//	stats_buffer(data, total_len, BYTES);
-//	stats_buffer(perf, bandwidth, SPEED);
-//	/* On 32-bit platforms, xil_printf is not able to print
-//	 * u64_t values, so converting these values in strings and
-//	 * displaying results
-//	 */
-//	sprintf(time, "%4.1f-%4.1f sec",
-//			(double)server.i_report.last_report_time,
-//			(double)(server.i_report.last_report_time + duration));
-//	xil_printf("[%3d] %s  %sBytes  %sbits/sec\n\r", server.client_id,
-//			time, data, perf);
-//
-//	if (report_type == INTER_REPORT)
-//		server.i_report.last_report_time += duration;
-//}
 
 /** Close a tcp session */
-static void tcp_server_close(struct tcp_pcb *pcb)
-{
-	err_t err;
-
-	if (pcb != NULL) {
-		tcp_recv(pcb, NULL);
-		tcp_err(pcb, NULL);
-		err = tcp_close(pcb);
-		if (err != ERR_OK) {
-			/* Free memory with abort */
-			tcp_abort(pcb);
-		}
-	}
-}
-
-/** Error callback, tcp session aborted */
-static void tcp_server_err(void *arg, err_t err)
-{
-	LWIP_UNUSED_ARG(err);
-	u64_t now = get_time_ms();
-	u64_t diff_ms = now - server.start_time;
-	tcp_server_close(c_pcb);
-	c_pcb = NULL;
-	tcp_conn_report(diff_ms, TCP_ABORTED_REMOTE);
-	xil_printf("TCP connection aborted\n\r");
-}
-
-
-///** Receive data on a tcp session */
-//static err_t tcp_recv_perf_traffic(void *arg, struct tcp_pcb *tpcb,
-//		struct pbuf *p, err_t err)
+//static void tcp_server_close(struct tcp_pcb *pcb)
 //{
-//	if (p == NULL) {
-//		u64_t now = get_time_ms();
-//		u64_t diff_ms = now - server.start_time;
-//		tcp_server_close(tpcb);
-//		tcp_conn_report(diff_ms, TCP_DONE_SERVER);
-//		xil_printf("TCP test passed Successfully\n\r");
-//		return ERR_OK;
-//	}
+//	err_t err;
 //
-//	/* Record total bytes for final report */
-//	server.total_bytes += p->tot_len;
-//
-//	if (server.i_report.report_interval_time) {
-//		u64_t now = get_time_ms();
-//		/* Record total bytes for interim report */
-//		server.i_report.total_bytes += p->tot_len;
-//		if (server.i_report.start_time) {
-//			u64_t diff_ms = now - server.i_report.start_time;
-//
-//			if (diff_ms >= server.i_report.report_interval_time) {
-//				tcp_conn_report(diff_ms, INTER_REPORT);
-//				/* Reset Interim report counters */
-//				server.i_report.start_time = 0;
-//				server.i_report.total_bytes = 0;
-//			}
-//		} else {
-//			/* Save start time for interim report */
-//			server.i_report.start_time = now;
+//	if (pcb != NULL) {
+//		tcp_recv(pcb, NULL);
+//		tcp_err(pcb, NULL);
+//		err = tcp_close(pcb);
+//		if (err != ERR_OK) {
+//			/* Free memory with abort */
+//			tcp_abort(pcb);
 //		}
 //	}
-//
-//	tcp_recved(tpcb, p->tot_len);
-//
-//	pbuf_free(p);
-//	return ERR_OK;
+//}
+
+/** Error callback, tcp session aborted */
+//static void tcp_server_err(void *arg, err_t err)
+//{
+//	LWIP_UNUSED_ARG(err);
+//	u64_t now = get_time_ms();
+//	u64_t diff_ms = now - server.start_time;
+//	tcp_server_close(c_pcb);
+//	c_pcb = NULL;
+//	tcp_conn_report(diff_ms, TCP_ABORTED_REMOTE);
+//	xil_printf("TCP connection aborted\n\r");
 //}
 
 /* A simple echo callback */
-static err_t tcp_recv_echo(void *arg, struct tcp_pcb *tpcb,
-                           struct pbuf *p, err_t err)
-{
-    if (!p) {
-        /* Connection closed by remote side */
-        xil_printf("Client closed connection.\r\n");
-        tcp_close(tpcb);  // Close from our side too
-        return ERR_OK;
-    }
-    /* Print debug info */
-    xil_printf("Received %d bytes\r\n", p->tot_len);
-
-    /* Echo the data back to sender: */
-    err_t wr_err = tcp_write(tpcb, p->payload, p->tot_len, TCP_WRITE_FLAG_COPY);
-    if (wr_err == ERR_OK) {
-        /* Make sure to send immediately */
-        tcp_output(tpcb);
-    } else {
-        xil_printf("tcp_write failed: %d\r\n", wr_err);
-    }
-
-    /* We must tell lwIP we've taken the data */
-    tcp_recved(tpcb, p->tot_len);
-
-    /* Free the pbuf */
-    pbuf_free(p);
-    return ERR_OK;
-}
+//static err_t tcp_recv_echo(void *arg, struct tcp_pcb *tpcb,
+//                           struct pbuf *p, err_t err)
+//{
+//    if (!p) {
+//        /* Connection closed by remote side */
+//        xil_printf("Client closed connection.\r\n");
+//        tcp_close(tpcb);  // Close from our side too
+//        return ERR_OK;
+//    }
+//    /* Print debug info */
+//    xil_printf("Received %d bytes\r\n", p->tot_len);
+//
+//    /* Echo the data back to sender: */
+//    err_t wr_err = tcp_write(tpcb, p->payload, p->tot_len, TCP_WRITE_FLAG_COPY);
+//    if (wr_err == ERR_OK) {
+//        /* Make sure to send immediately */
+//        tcp_output(tpcb);
+//    } else {
+//        xil_printf("tcp_write failed: %d\r\n", wr_err);
+//    }
+//
+//    /* We must tell lwIP we've taken the data */
+//    tcp_recved(tpcb, p->tot_len);
+//
+//    /* Free the pbuf */
+//    pbuf_free(p);
+//    return ERR_OK;
+//}
 
 static err_t tcp_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {

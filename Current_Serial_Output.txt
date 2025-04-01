@@ -1,80 +1,45 @@
-UART Debug Initialized. Waiting for files...
-Received header: ID=DATAIN__, size=379 bytes
-Complete file received for ID DATAIN__
-Parsed DATAIN: expected 40 samples, got 40
-DATAIN file ready.
-Received header: ID=WIN_____, size=3028 bytes
-Complete file received for ID WIN_____
-Parsed W_in: expected 320 samples, got 320
-W_in file ready.
-Received header: ID=WX______, size=601 bytes
-Complete file received for ID WX______
-Parsed W_x: expected 64 samples, got 64
-W_x file ready.
-Received header: ID=WOUT____, size=2063 bytes
-Complete file received for ID WOUT____
-Parsed W_out: expected 192 samples, got 192
-W_out file ready.
-All files received. Proceeding to echo state network computation.Reservoir state (state):
-state[0] = 0.001866
-state[1] = 0.003661
-state[2] = -0.025588
-state[3] = -0.029242
-state[4] = 0.053578
-state[5] = 0.011186
-state[6] = -0.110369
-state[7] = 0.112296
-Extended state vector (state concatenated with dataIn):
-state_extended[0] = 0.001866
-state_extended[1] = 0.003661
-state_extended[2] = -0.025588
-state_extended[3] = -0.029242
-state_extended[4] = 0.053578
-state_extended[5] = 0.011186
-state_extended[6] = -0.110369
-state_extended[7] = 0.112296
-state_extended[8] = -0.013783
-state_extended[9] = 0.005468
-state_extended[10] = 0.005368
-state_extended[11] = 0.043320
-state_extended[12] = 0.039966
-state_extended[13] = 0.021356
-state_extended[14] = -0.004067
-state_extended[15] = -0.049150
-state_extended[16] = -0.015441
-state_extended[17] = -0.021804
-state_extended[18] = -0.012013
-state_extended[19] = -0.007354
-state_extended[20] = -0.004664
-state_extended[21] = -0.017916
-state_extended[22] = -0.010602
-state_extended[23] = -0.008753
-state_extended[24] = 0.014556
-state_extended[25] = 0.014775
-state_extended[26] = 0.010531
-state_extended[27] = 0.001814
-state_extended[28] = -0.005204
-state_extended[29] = -0.006158
-state_extended[30] = 0.005028
-state_extended[31] = 0.012170
-state_extended[32] = 0.002702
-state_extended[33] = 0.013869
-state_extended[34] = -0.003852
-state_extended[35] = -0.021021
-state_extended[36] = 0.007346
-state_extended[37] = -0.010683
-state_extended[38] = 0.001098
-state_extended[39] = -0.010037
-state_extended[40] = 0.006902
-state_extended[41] = -0.007960
-state_extended[42] = 0.002128
-state_extended[43] = -0.002563
-state_extended[44] = 0.009621
-state_extended[45] = 0.006950
-state_extended[46] = 0.004123
-state_extended[47] = 0.001417
-ESN output (data_out):
-data_out[0] = -0.174513
-data_out[1] = 1.482142
-data_out[2] = -1.611896
-data_out[3] = 0.866513
+-----ESN Core TCP Server Application-----
+Start PHY autonegotiation
+Waiting for PHY to complete autonegotiation.
+autonegotiation complete
+link speed for phy address 7: 1000
+Configuring default IP 192.168.1.10
+Board IP:       192.168.1.10
+Netmask :       255.255.255.0
+Gateway :       192.168.1.1
+
+TCP server listening on port 5001
+
+Accepted new TCP client connection
+Header -> ID: WIN_____, Size: 3028 bytes
+Full file received, size: 3028
+Parsed 320 floats into array.
+Client closed connection.
+Accepted new TCP client connection
+Header -> ID: WX______, Size: 601 bytes
+Full file received, size: 601
+Parsed 64 floats into array.
+Client closed connection.
+Accepted new TCP client connection
+Header -> ID: WOUT____, Size: 2063 bytes
+Full file received, size: 2063
+Parsed 192 floats into array.
+Client closed connection.
+Accepted new TCP client connection
+Header -> ID: DATAIN__, Size: 379 bytes
+Full file received, size: 379
+Parsed 40 floats into array.
+Client closed connection.
+Accepted new TCP client connection
+Header -> ID: CMD_ESN_, Size: 8 bytes
+Full file received, size: 8
+Running ESN on the loaded arrays...
+ESN Output:
+Printing up to 4 elements (out of 4):
+arr[0] = -0.174513
+arr[1] = 1.482142
+arr[2] = -1.611896
+arr[3] = 0.866513
+
+ESN computation done.
+Client closed connection.

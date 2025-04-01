@@ -105,6 +105,12 @@
                                 								
                                 <option id="xilinx.gnu.c.link.option.userobjs.877712773" name="Other Objects" superClass="xilinx.gnu.c.link.option.userobjs" useByScannerDiscovery="false" valueType="userObjs"/>
                                 								
+                                <option id="xilinx.gnu.c.link.option.libs.1146640479" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+                                    									
+                                    <listOptionValue builtIn="false" value="m"/>
+                                    								
+                                </option>
+                                								
                                 <inputType id="xilinx.gnu.linker.input.2013559877" superClass="xilinx.gnu.linker.input">
                                     									
                                     <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
