@@ -103,7 +103,7 @@
                                 								
                                 <option id="xilinx.gnu.c.link.option.ldflags.2116200157" name="Linker Flags" superClass="xilinx.gnu.c.link.option.ldflags" useByScannerDiscovery="false" value=" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -Wl,-build-id=none -specs=Xilinx.spec" valueType="string"/>
                                 								
-                                <option id="xilinx.gnu.c.link.option.userobjs.877712773" name="Other Objects" superClass="xilinx.gnu.c.link.option.userobjs" useByScannerDiscovery="false" valueType="userObjs"/>
+                                <option id="xilinx.gnu.c.link.option.userobjs.877712773" name="Other Objects" superClass="xilinx.gnu.c.link.option.userobjs" useByScannerDiscovery="false"/>
                                 								
                                 <option id="xilinx.gnu.c.link.option.libs.1146640479" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
                                     									

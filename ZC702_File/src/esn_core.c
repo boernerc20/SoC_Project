@@ -1,5 +1,28 @@
+/*******************************************************************************
+ * File: esn_core.c
+ * Author: Christopher Boerner
+ * Date: 04-01-2025
+ *
+ * Description:
+ *	   Echo State Network (ESN) core equations to perform on the arrays passed
+ *	   from tcp_file.c. Currently for one sample.
+ *
+ *   Expected Files:
+ *     - DATAIN file: 40 float values.
+ *     - WIN file: 320 float values.
+ *     - WX file:  64 float values.
+ *     - WOUT file: 192 float values.
+ *
+ *   Generate:
+ *     - state_pre
+ *     - res_state
+ *     - state_ext
+ *     - data_out
+ *
+ ******************************************************************************/
+
 #include "esn_core.h"
-#include <string.h>  // optional if you use memset, etc.
+#include <string.h>
 
 /*
  * Update reservoir state based on:
@@ -64,7 +87,7 @@ void form_state_extended(const float *dataIn,
  *   data_out[k] = sum_j( W_out[k*TOTAL + j] * state_extended[j] )
  *
  * Where TOTAL = (NUM_INPUTS + NUM_NEURONS),
- * and k goes over however many output dimensions you have (e.g., 4).
+ * and k goes over however many output dimensions you have (i.e., 4).
  */
 void compute_output(const float *W_out,
                     const float *state_extended,

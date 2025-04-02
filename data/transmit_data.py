@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env python3
 import socket
 import struct
@@ -23,7 +25,7 @@ def send_file_tcp(ip, port, filename, file_id):
     file_bytes = file_data.encode('ascii')
     file_size = len(file_bytes)
 
-    # Prepare the header (same format as your older code)
+    # Prepare the header
     header = struct.pack(HEADER_FORMAT,
                          file_id.encode('ascii').ljust(8, b'_'), 
                          file_size,

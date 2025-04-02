@@ -30,6 +30,7 @@
 /*
  * Modifications by Christopher Boerner, Virginia Tech ECE, 2025.
  * - Changed first debugging statement for TCP server
+ * - Disabled DHCP request, connection is wired directly
  */
 
 #include <stdio.h>

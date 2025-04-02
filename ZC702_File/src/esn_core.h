@@ -11,6 +11,7 @@ extern "C" {
  * Adjust NUM_INPUTS and NUM_NEURONS here,
  */
 #define NUM_INPUTS  40   /* data input size */
+#define NUM_OUTPUTS 4	 /* data output size */
 #define NUM_NEURONS 8    /* reservoir (hidden) layer size */
 
 /*

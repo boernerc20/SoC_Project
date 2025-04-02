@@ -25,10 +25,10 @@ extern "C" {
  *   - w_x:      8*8   = 64 elements
  *   - w_out:    4*(40+8) = 192 elements
  */
-#define DATAIN_MAX  40
-#define WIN_MAX     (8 * 40)
-#define WX_MAX      (8 * 8)
-#define WOUT_MAX    (4 * (40 + 8))
+//#define SAMPLES  6400
+#define WIN_MAX     	(8 * 40)
+#define WX_MAX      	(8 * 8)
+#define WOUT_MAX    	(4 * (40 + 8))
 
 /*
  * tcp_recv_file:
