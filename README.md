@@ -1,8 +1,8 @@
 # SoC Project
 
-This project creates a Echo-State Network (ESN) on the ZC702 FPGA's processing system (SoC). The board creates a TCP server for a client to transfer files over Ethernet and monitor functionality over a USB-UART port. A python script is used to send files and commands easily. The commands (in the form of dummy files with command headers) are used to initialize ESN processing, soft resetting, etc.
+This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s processing system (SoC). The design features a robust TCP server running on the board that enables a client PC to transfer various files—including matrix and data files—over Ethernet. File transfers and system commands (such as initiating ESN processing or performing a soft reset) are handled using custom headers embedded in the transmitted data. A Python script provides an interactive interface for easily sending these files and commands. Additionally, the board outputs detailed status and debug information via a USB-UART port, allowing real-time monitoring of network activity and ESN computations.
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 1. **Clone the repository:**
    ```bash
@@ -51,13 +51,84 @@ This project creates a Echo-State Network (ESN) on the ZC702 FPGA's processing s
    ```bash
    ./transmit_data.py
 7. **Use Script to Interact with Board**
-- See functionality section for more information
+- See **Python Client Script Functionality** section for more information
 
-## 🧱 Hardware
-The hardware and bitstream were synthesized/implemented using Vivado 2023.2. `zc702_soc` houses the Vivado project with the .xsa and .bit files.
+## Hardware
+The hardware and bitstream were synthesized/implemented using Vivado 2023.2. `zc702_soc` houses the Vivado project with the .xsa and .bit files. Automation was run on the ZYNQ7 Processing System IP to use default peripherals for UART, I2C, SD card, and Ethernet functionality.
 
 **Hardware Block Diagram**
-![Block Diagram](images/block_diagram.png)
+<p align="center">
+  <img src="images/block_diagram.png" width="750"/>
+</p>
 
 **Zynq 7000 SoC Design**
-![Zynq PS](images/zynq_design.png)
+<p align="center">
+  <img src="images/zynq_design.png" width="750"/>
+</p>
+
+## FPGA Board Code Functionality
+The board firmware is designed to run on the ZC702 FPGA evaluation board with a Zynq-7000 SoC. It integrates Ethernet communication via the lwIP TCP/IP stack and an Echo State Network (ESN) core for data processing. Below is a detailed overview of its operation:
+
+1. **Network Initialization**
+   - **Ethernet Setup:**  
+     The firmware initializes the Ethernet interface, configuring a static IP (default: `192.168.1.10`), netmask, and gateway. DHCP is bypassed if no DHCP server is detected.
+   - **PHY Autonegotiation:**  
+     The PHY performs autonegotiation to establish a reliable Gigabit link with the host PC.
+
+2. **TCP File Reception**
+   - **Buffer & Header:**  
+     Incoming data is received on TCP port 5001 and stored in a 3 MB buffer. The first 16 bytes of each transmission form a header containing:
+     - An 8-character file ID (e.g., `WIN_____`, `WX______`, `WOUT____`, `DATAIN__`).
+     - A 4-byte field specifying the payload size.
+     - 4 reserved bytes.
+   - **Dynamic Parsing:**  
+     Depending on the header, the code parses the payload:
+     - **Matrix Files (w_in, w_x, w_out):**  
+       Data is stored in fixed static arrays.
+     - **DATAIN File:**  
+       Data is stored in a dynamically allocated array (using `malloc`). The parser reads the entire file and converts ASCII-encoded floats into binary float values.
+   - **Sample Count Determination:**  
+     For the DATAIN file, the total number of floats is divided by the number of inputs per sample (40) to determine how many samples are contained in the file. This enables processing of one sample for 40 floats, two samples for 80 floats, etc.
+
+3. **Command Handling and Reset Functionality**
+   - **Command Identification:**  
+     Special header IDs (e.g., `"CMD_ESN_"` for running the ESN and `"CMD_RDI_"` for resetting the DATAIN array) are used to trigger board-side commands. They are sent to the board in the form of dummy files (in `data/` folder).
+   - **Selective Reset:**  
+     A soft reset function clears only the DATAIN array (freeing dynamic memory and resetting related flags), while leaving the matrix files intact. This allows new DATAIN files to be loaded without re-sending the unchanged matrices.
+
+4. **ESN Core Integration and Processing Flow**
+   - **Modular ESN Core:**  
+     The ESN functionality is encapsulated in separate files (`esn_core.h` and `esn_core.c`), which implement:
+     - **Update State:**  
+       Computes the reservoir state as  
+       `state = tanh(W_in * data_in + W_x * state_pre)`.
+     - **Form Extended State:**  
+       Concatenates the current input and reservoir state into a single vector.
+     - **Compute Output:**  
+       Calculates the final output by multiplying the extended state vector by the output weight matrix (`W_out`).
+   - **Sample-by-Sample Processing:**  
+       For DATAIN files containing multiple samples, the firmware iterates over each sample. It updates the reservoir state for each sample—using the output of the previous sample as the new `state_pre`—and computes the ESN output.
+   - **Output Verification:**  
+     Computed output vectors (4 values per sample) are printed via UART. Custom printing functions format the floats to six decimal places for clear diagnostic output.
+
+## Python Client Script Functionality
+
+The Python client script is designed to interactively send various files and commands over Ethernet (TCP) to the ZC702 board. Its main features include:
+
+1. **Interactive Menu:**  
+   - Presents options to send matrix files (w_in.dat, w_x.dat, w_out.dat) individually or all together.
+   - Allows sending a DATAIN file containing multiple samples.
+   - Includes commands to trigger the ESN computation and to reset only the DATAIN data on the board.
+
+2. **TCP-Based File Transfer:**  
+   - Establishes a TCP connection to the board’s fixed IP (default: 192.168.1.10) on port 5001.
+   - For file transfers, it constructs a header (8-byte file ID, 4-byte file size, 4 reserved bytes) and sends the file content followed by an EOF marker.
+   - For commands (e.g., “ESN” or “RDI”), it sends a small file with a command header to the board. Planning to open a seperate TCP port to avoid creating seperate files.
+
+3. **Status Feedback:**  
+   - Displays connection status and confirmation messages on the console to indicate when files or commands are successfully sent.
+   - Guides the user to provide correct filenames if the file isn’t found locally.
+
+4. **Modular and Expandable Design:**  
+   - Uses Python’s built-in modules (socket, struct, time, os) to manage network communications and file I/O.
+   - The simple, modular design makes it easy to expand the script’s functionality in the future.
