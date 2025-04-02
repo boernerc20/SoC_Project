@@ -1,45 +1,20 @@
------ESN Core TCP Server Application-----
-Start PHY autonegotiation
-Waiting for PHY to complete autonegotiation.
-autonegotiation complete
-link speed for phy address 7: 1000
-Configuring default IP 192.168.1.10
-Board IP:       192.168.1.10
-Netmask :       255.255.255.0
-Gateway :       192.168.1.1
-
-TCP server listening on port 5001
-
-Accepted new TCP client connection
-Header -> ID: WIN_____, Size: 3028 bytes
-Full file received, size: 3028
-Parsed 320 floats into array.
-Client closed connection.
-Accepted new TCP client connection
-Header -> ID: WX______, Size: 601 bytes
-Full file received, size: 601
-Parsed 64 floats into array.
-Client closed connection.
-Accepted new TCP client connection
-Header -> ID: WOUT____, Size: 2063 bytes
-Full file received, size: 2063
-Parsed 192 floats into array.
-Client closed connection.
-Accepted new TCP client connection
-Header -> ID: DATAIN__, Size: 379 bytes
-Full file received, size: 379
-Parsed 40 floats into array.
-Client closed connection.
-Accepted new TCP client connection
-Header -> ID: CMD_ESN_, Size: 8 bytes
-Full file received, size: 8
-Running ESN on the loaded arrays...
-ESN Output:
-Printing up to 4 elements (out of 4):
-arr[0] = -0.174513
-arr[1] = 1.482142
-arr[2] = -1.611896
-arr[3] = 0.866513
-
-ESN computation done.
-Client closed connection.
+Sample 0: y_out = [-0.174513, 1.482142, -1.611896, 0.866513]
+Sample 1: y_out = [-0.200830, 0.189166, -0.167655, 1.501627]
+Sample 2: y_out = [0.811171, -0.981690, 0.957758, 0.466487]
+Sample 3: y_out = [0.978207, -0.592270, -0.220730, -0.621115]
+Sample 4: y_out = [0.805443, -0.588180, -0.013461, -0.306466]
+Sample 5: y_out = [0.748046, 0.269457, 0.942200, -0.235044]
+Sample 6: y_out = [-0.062661, 0.064003, -0.063156, -0.086186]
+Sample 7: y_out = [0.449231, 0.561610, -0.947058, -0.254607]
+Sample 8: y_out = [0.218709, -0.189496, -0.206414, -0.061586]
+Sample 9: y_out = [-0.853761, -0.238440, -0.774263, -1.072082]
+Sample 10: y_out = [-0.922927, -0.572018, 0.300136, 0.234873]
+Sample 11: y_out = [-0.802301, -0.000593, -0.128421, -0.323767]
+Sample 12: y_out = [-0.646605, 0.631954, -0.640139, -0.852673]
+Sample 13: y_out = [-0.551011, -0.190454, -0.132783, -0.910250]
+Sample 14: y_out = [-0.731207, 0.105075, -0.183691, -0.349264]
+Sample 15: y_out = [0.440474, 0.307625, 0.515801, 0.834866]
+Sample 16: y_out = [0.484337, -0.291474, 0.448710, 0.177474]
+Sample 17: y_out = [0.076486, -0.147342, -0.025463, 0.991685]
+Sample 18: y_out = [-0.256490, 0.252586, -0.923645, -0.265532]
+Sample 19: y_out = [-0.739720, -0.365932, -1.249919, -0.350179]

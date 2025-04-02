@@ -94,8 +94,15 @@ def main():
             send_file_tcp(board_ip, board_port, "cmd_esn.txt", "CMD_ESN_")
 
         elif choice == 'r':
-            # Send a tiny "command" file to the board with file_id = "CMD_RST_"
-            send_file_tcp(board_ip, board_port, "cmd_rst.txt", "CMD_RST_")
+            print("\nReset options:")
+            print("1 - Reset everything")
+            print("2 - Reset just data in")
+            reset_choice = input("Enter your option (1/2): ").strip().lower()
+
+            if reset_choice == '1':
+                send_file_tcp(board_ip, board_port, "cmd_rst.txt", "CMD_RST_")
+            elif reset_choice == '2':
+                send_file_tcp(board_ip, board_port, "cmd_rdi.txt", "CMD_RDI_")
 
         elif choice == 'q':
             print("Exiting.")
