@@ -44,7 +44,7 @@ This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s proces
   TCP server listening on port 5001
 - Confirm Ethernet connection by pinging board (Should see no errors and 0% packet loss):
    ```bash
-   ping 192.168.1.20
+   ping 192.168.1.10
 6. **Run Python Script**
 - Navigate to `data` folder.
 - Run script:
@@ -123,7 +123,7 @@ The Python client script is designed to interactively send various files and com
 2. **TCP-Based File Transfer:**  
    - Establishes a TCP connection to the board’s fixed IP (default: 192.168.1.10) on port 5001.
    - For file transfers, it constructs a header (8-byte file ID, 4-byte file size, 4 reserved bytes) and sends the file content followed by an EOF marker.
-   - For commands (e.g., “ESN” or “RDI”), it sends a small file with a command header to the board. Planning to open a seperate TCP port to avoid creating seperate files.
+   - For commands (e.g., “ESN” or “RDI”), it sends a small file with a command header to the board. (Planning to open a seperate TCP port to avoid creating seperate files)
 
 3. **Status Feedback:**  
    - Displays connection status and confirmation messages on the console to indicate when files or commands are successfully sent.
