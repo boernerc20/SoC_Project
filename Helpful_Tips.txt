@@ -1,2 +1,0 @@
-- To source venv for Python script: source venv/bin/activate
-- Opening debugger port: minicom -D /dev/ttyACM0 -b 115200 (on Linux see ports with: sudo dmesg | grep tty)
