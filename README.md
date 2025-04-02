@@ -10,8 +10,7 @@ This project creates a Echo-State Network (ESN) on the ZC702 FPGA's processing s
    cd SoC_Project
 2. **Import Project into Vitis**
 - Launch **Vitis IDE**.
-- Go to **File > Import > Import projects from Git > Navigate to ZC702_File Project**.
-- Navigate to the `Vitis/ZC702_File` folder.
+- Go to **File > Import > Import projects from Git > Navigate to `ZC702_File` Project**.
 - Select the project and click **Finish**.
 - When prompted for the hardware platform:
   - Select `base_ps_wrapper.xsa` from the Vivado export located in the `zc702_soc` folder.
@@ -53,3 +52,12 @@ This project creates a Echo-State Network (ESN) on the ZC702 FPGA's processing s
    ./transmit_data.py
 7. **Use Script to Interact with Board**
 - See functionality section for more information
+
+## 🧱 Hardware
+The hardware and bitstream were synthesized/implemented using Vivado 2023.2. `zc702_soc` houses the Vivado project with the .xsa and .bit files.
+
+**Hardware Block Diagram**
+![Block Diagram](images/block_diagram.png)
+
+**Zynq 7000 SoC Design**
+![Zynq PS](images/zynq_design.png)
