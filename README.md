@@ -138,4 +138,6 @@ The Python client script is designed to interactively send various files and com
 - Standalone LWIP Library: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842366/Standalone+LWIP+library
 - Integrate an lwIP TCP/IP Stack into Embedded Applications: https://www.analog.com/en/resources/technical-articles/integrate-lwip-tcp-ip-stack-embedded-apps.html
 - lwIP Wiki: https://en.wikipedia.org/wiki/LwIP
+- Ethernet Communication using TCP protocol in Zynq Processor: https://www.youtube.com/watch?v=8hjhUv_JzWM
+- TCP and OSI Model: https://www.youtube.com/watch?v=CRdL1PcherM
 
