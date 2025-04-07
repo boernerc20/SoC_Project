@@ -15,7 +15,9 @@ This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s proces
 - For Application Project Settings:
   - Select `base_ps_wrapper.xsa` from the Vivado export located in the `zc702_soc` folder.
   - Make sure it matches your target hardware.
-
+<p align="center">
+  <img src="images/hardware_select.png" width="300"/>
+</p>
 
 3. **Open a UART Serial Terminal for Debugging**
 - Check what COM port the USB-UART cable is connected to
@@ -44,11 +46,12 @@ This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s proces
   Netmask :       255.255.255.0
   Gateway :       192.168.1.1
   TCP server listening on port 5001
+  Command server listening on port 5002
 - Confirm Ethernet connection by pinging board (Should see no errors and 0% packet loss):
    ```bash
    ping 192.168.1.10
 6. **Run Python Script**
-- Navigate to `data` folder.
+- Navigate to `data` folder in `SoC_Project`.
 - Run script:
    ```bash
    ./transmit_data.py
