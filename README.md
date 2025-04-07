@@ -132,3 +132,10 @@ The Python client script is designed to interactively send various files and com
 4. **Modular and Expandable Design:**  
    - Uses Python’s built-in modules (socket, struct, time, os) to manage network communications and file I/O.
    - The simple, modular design makes it easy to expand the script’s functionality in the future.
+   - 
+## Useful Resources
+- Xilinx Embedded Software Development: https://docs.amd.com/r/en-US/ug1400-vitis-embedded
+- Standalone LWIP Library: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842366/Standalone+LWIP+library
+- Integrate an lwIP TCP/IP Stack into Embedded Applications: https://www.analog.com/en/resources/technical-articles/integrate-lwip-tcp-ip-stack-embedded-apps.html
+- lwIP Wiki: https://en.wikipedia.org/wiki/LwIP
+
