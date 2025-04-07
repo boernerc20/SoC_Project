@@ -7,6 +7,9 @@ extern "C" {
 
 #include "lwip/tcp.h"
 #include "lwip/pbuf.h"
+#include "esn_core.h"
+#include "xil_printf.h"
+#include <string.h> // for memcpy, memset
 
 /* Buffer size for File Reception Buffer */
 #define MAX_FILE_SIZE (3072 * 3072)  /* 3MB (assuming data_in is ~2.7 MB) */
@@ -30,6 +33,26 @@ extern "C" {
 #define WX_MAX      	(8 * 8)
 #define WOUT_MAX    	(4 * (40 + 8))
 
+/* Define a struct to match file header (packed) */
+typedef struct __attribute__((__packed__)) {
+    char file_id[8];
+    uint32_t file_size;
+    char reserved[4];
+} file_header_t;
+
+/* Init function to reset global state */
+void tcp_file_init(void);
+
+/* Helper function for FP value printing (6 decimal places) */
+void print_fixed_6(float val);
+
+/* Print up to 'max_to_print' elements from a float array */
+void print_float_array(const float *arr, int total_count, int max_to_print);
+
+int parse_floats_into_array(const char *raw_text,
+                                   unsigned int text_len,
+                                   float *dest_array,
+                                   unsigned int max_count);
 /*
  * tcp_recv_file:
  *   The main callback function handling file data arrival.
@@ -43,7 +66,13 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
  *   Resets any global state for file reception,
  *   clearing buffers/flags. Call at startup or after a reset command.
  */
-void tcp_file_init(void);
+
+
+
+/* ESN-Related Function Prototypes */
+void run_esn_calculation(void);
+void reset_arrays(void);
+void reset_data_in(void);
 
 #ifdef __cplusplus
 }

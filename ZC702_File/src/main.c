@@ -30,6 +30,7 @@
 /*
  * Modifications by Christopher Boerner, Virginia Tech ECE, 2025.
  * - Changed first debugging statement for TCP server
+ * - Added call to second command TCP connection on its own port (5002)
  * - Disabled DHCP request, connection is wired directly
  */
 
@@ -213,8 +214,12 @@ int main(void)
 	/* print app header */
 	print_app_header();
 
-	/* start the application*/
+	/* start the file reception application (TCP server on port 5001)*/
 	start_application();
+
+	// Start the command reception application (TCP server on port 5002) */
+	start_command_server();
+
 	xil_printf("\r\n");
 
 	while (1) {

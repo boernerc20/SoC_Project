@@ -16,9 +16,6 @@
  ******************************************************************************/
 
 #include "tcp_file.h"
-#include "esn_core.h"
-#include "xil_printf.h"
-#include <string.h> // for memcpy, memset
 
 /* Global/Static variables local to this file */
 static char file_buffer[MAX_FILE_SIZE];
@@ -41,18 +38,18 @@ static int w_x_ready = 0;
 static int w_out_ready = 0;
 static int data_in_ready = 0;
 
-static void run_esn_calculation(void);
-static void reset_arrays(void);
-static void reset_data_in(void);
+//static void run_esn_calculation(void);
+//static void reset_arrays(void);
+//static void reset_data_in(void);
 
-/* Define a struct to match file header (packed) */
-typedef struct __attribute__((__packed__)) {
-    char file_id[8];
-    uint32_t file_size;
-    char reserved[4];
-} file_header_t;
+///* Define a struct to match file header (packed) */
+//typedef struct __attribute__((__packed__)) {
+//    char file_id[8];
+//    uint32_t file_size;
+//    char reserved[4];
+//} file_header_t;
 
-/* Init function to reset global state */
+///* Init function to reset global state */
 void tcp_file_init(void)
 {
     memset(file_buffer, 0, sizeof(file_buffer));
@@ -62,7 +59,7 @@ void tcp_file_init(void)
 }
 
 /* Helper function for FP value printing (6 decimal places) */
-static void print_fixed_6(float val)
+void print_fixed_6(float val)
 {
     /* Handle sign */
     int negative = (val < 0.0f);
@@ -85,7 +82,7 @@ static void print_fixed_6(float val)
 }
 
 /* Print up to 'max_to_print' elements from a float array */
-static void print_float_array(const float *arr, int total_count, int max_to_print)
+void print_float_array(const float *arr, int total_count, int max_to_print)
 {
     /* Decide how many elements to print: */
     int limit = (total_count < max_to_print) ? total_count : max_to_print;
@@ -100,7 +97,7 @@ static void print_float_array(const float *arr, int total_count, int max_to_prin
 }
 
 /* Helper function to read lines or space-delimited values from the buffer and convert to FP values */
-static int parse_floats_into_array(const char *raw_text,
+int parse_floats_into_array(const char *raw_text,
                                    unsigned int text_len,
                                    float *dest_array,
                                    unsigned int max_count)
@@ -272,18 +269,18 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
             // Optionally, store num_samples in a global variable for later use:
              global_data_in_samples = num_samples;
         }
-        else if (strncmp(hdr->file_id, "CMD_ESN_", 8) == 0) {
-            // This triggers ESN calculation
-            run_esn_calculation();
-        }
-        else if (strncmp(hdr->file_id, "CMD_RST_", 8) == 0) {
-        	xil_printf("Received CMD_RST_: Resetting all arrays...\n\r");
-        	reset_arrays();
-        }
-        else if (strncmp(hdr->file_id, "CMD_RDI_", 8) == 0) {
-        	xil_printf("Received CMD_RDI_: Resetting DATAIN...\n\r");
-        	reset_data_in();
-        }
+//        else if (strncmp(hdr->file_id, "CMD_ESN_", 8) == 0) {
+//            // This triggers ESN calculation
+//            run_esn_calculation();
+//        }
+//        else if (strncmp(hdr->file_id, "CMD_RST_", 8) == 0) {
+//        	xil_printf("Received CMD_RST_: Resetting all arrays...\n\r");
+//        	reset_arrays();
+//        }
+//        else if (strncmp(hdr->file_id, "CMD_RDI_", 8) == 0) {
+//        	xil_printf("Received CMD_RDI_: Resetting DATAIN...\n\r");
+//        	reset_data_in();
+//        }
         /* Reset for the next file */
         file_offset = 0;
         expected_file_size = 0;

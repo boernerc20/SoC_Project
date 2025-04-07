@@ -3,7 +3,7 @@
  * Author: Christopher Boerner
  * Date: 04-01-2025
  *
- * Description:
+ * 	 Description:
  *	   Echo State Network (ESN) core equations to perform on the arrays passed
  *	   from tcp_file.c. Currently for one sample.
  *

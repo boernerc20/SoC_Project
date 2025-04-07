@@ -47,6 +47,12 @@ def send_file_tcp(ip, port, filename, file_id):
 
     print(f"Sent '{filename}' with ID '{file_id}', size {file_size} bytes.\n")
 
+def send_command(ip, port, cmd):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((ip, port))
+        s.sendall(cmd.encode('ascii'))
+        time.sleep(0.1)
+    print(f"Sent command: {cmd}")
 
 def main():
     board_ip = "192.168.1.10"  # IP for board (host)
@@ -90,8 +96,7 @@ def main():
             send_file_tcp(board_ip, board_port, data_filename, "DATAIN___")
         
         elif choice == '3':
-            # Send a tiny "command" file to the board with file_id = "CMD_ESN_"
-            send_file_tcp(board_ip, board_port, "cmd_esn.txt", "CMD_ESN_")
+            send_command(board_ip, 5002, "ESN")
 
         elif choice == 'r':
             print("\nReset options:")
@@ -100,9 +105,9 @@ def main():
             reset_choice = input("Enter your option (1/2): ").strip().lower()
 
             if reset_choice == '1':
-                send_file_tcp(board_ip, board_port, "cmd_rst.txt", "CMD_RST_")
+                send_command(board_ip, 5002, "RESET")
             elif reset_choice == '2':
-                send_file_tcp(board_ip, board_port, "cmd_rdi.txt", "CMD_RDI_")
+                send_command(board_ip, 5002, "RDI")
 
         elif choice == 'q':
             print("Exiting.")
