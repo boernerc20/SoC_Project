@@ -67,7 +67,7 @@ The hardware and bitstream were synthesized/implemented using Vivado 2023.2. `zc
 </p>
 
 ## FPGA Board Code Functionality
-The board firmware is designed to run on the ZC702 FPGA evaluation board with a Zynq-7000 SoC. It integrates Ethernet communication via the lwIP TCP/IP stack and an Echo State Network (ESN) core for data processing. Below is a detailed overview of its operation:
+The board firmware is designed to run on the ZC702 FPGA evaluation board with a Zynq-7000 SoC. It integrates Ethernet communication via the lwIP TCP/IP stack and an Echo State Network (ESN) core for data processing. The TCP/IP stack was created by Xilinx with these files modified or created: `esn_core.h`, `esn_core.c`, `main.c`, `tcp_file.h`, `tcp_file.c`, and `tcp_perf_server.c`. Below is a detailed overview of its operation:
 
 1. **Network Initialization**
    - **Ethernet Setup:**  
@@ -132,7 +132,7 @@ The Python client script is designed to interactively send various files and com
 4. **Modular and Expandable Design:**  
    - Uses Python’s built-in modules (socket, struct, time, os) to manage network communications and file I/O.
    - The simple, modular design makes it easy to expand the script’s functionality in the future.
-   - 
+
 ## Useful Resources
 - Xilinx Embedded Software Development: https://docs.amd.com/r/en-US/ug1400-vitis-embedded
 - Standalone LWIP Library: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842366/Standalone+LWIP+library
