@@ -14,7 +14,7 @@ This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s proces
 - Select the project and click **Finish**.
 - For Application Project Settings:
   - Select `base_ps_wrapper.xsa` from the Vivado export located in the `zc702_soc` folder.
-  - Make sure it matches your target hardware.
+  - Make sure it matches your target hardware and the bitstream is found.
 <p align="center">
   <img src="images/hardware_select.png" width="300"/>
 </p>
