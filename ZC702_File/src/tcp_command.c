@@ -43,9 +43,10 @@ static err_t cmd_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
     xil_printf("Received command: %s\n\r", cmd_buf);
 
     /* Check the command text and call the appropriate function */
-    if (strncmp(cmd_buf, "ESN", 3) == 0) {
-        run_esn_calculation();
-    } else if (strncmp(cmd_buf, "RESET", 5) == 0) {
+//    if (strncmp(cmd_buf, "ESN", 3) == 0) {
+//        run_esn_calculation();
+//    }
+    if (strncmp(cmd_buf, "RESET", 5) == 0) {
         reset_arrays();
     } else if (strncmp(cmd_buf, "RDI", 3) == 0) {
         reset_data_in();

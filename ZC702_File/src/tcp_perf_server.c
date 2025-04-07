@@ -109,7 +109,7 @@ static err_t tcp_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
     if ((err != ERR_OK) || (newpcb == NULL)) {
         return ERR_VAL;
     }
-    xil_printf("Accepted new TCP client connection\r\n");
+//    xil_printf("Accepted new TCP client connection\r\n");
 
     // Optionally re-init file globals each time
     tcp_file_init();

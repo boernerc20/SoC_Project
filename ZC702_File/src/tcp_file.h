@@ -22,16 +22,18 @@ extern "C" {
  */
 #define HEADER_SIZE 16
 
+#define SAMPLES         6400
+
 /* Expected integer counts for each file:
  *   - data_in:  40 elements (one sample)
  *   - w_in:     8*40  = 320 elements
  *   - w_x:      8*8   = 64 elements
  *   - w_out:    4*(40+8) = 192 elements
  */
-//#define SAMPLES  6400
 #define WIN_MAX     	(8 * 40)
 #define WX_MAX      	(8 * 8)
 #define WOUT_MAX    	(4 * (40 + 8))
+#define DATA_OUT_MAX    (NUM_OUTPUTS * SAMPLES)
 
 /* Define a struct to match file header (packed) */
 typedef struct __attribute__((__packed__)) {
@@ -70,7 +72,7 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
 
 
 /* ESN-Related Function Prototypes */
-void run_esn_calculation(void);
+void run_esn_calculation(int num_samples_in_chunk);
 void reset_arrays(void);
 void reset_data_in(void);
 

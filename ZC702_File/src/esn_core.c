@@ -105,3 +105,22 @@ void compute_output(const float *W_out,
         }
     }
 }
+
+/**
+ * Computes the Mean Squared Error (MSE) between two arrays of floats.
+ *
+ * @param predicted  Pointer to the array of predicted (computed) values.
+ * @param golden     Pointer to the array of golden (reference) values.
+ * @param length     The number of elements in each array.
+ * @return           The MSE value as a float.
+ */
+float compute_mse(const float *predicted, const float *golden, int length)
+{
+    float mse = 0.0f;
+    for (int i = 0; i < length; i++) {
+        float diff = predicted[i] - golden[i];
+        mse += diff * diff;
+    }
+    mse /= length;
+    return mse;
+}

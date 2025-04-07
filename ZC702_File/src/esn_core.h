@@ -52,6 +52,10 @@ void compute_output(const float *W_out,
                     const float *state_extended,
                     float *data_out);
 
+float compute_mse(const float *predicted,
+				  const float *golden,
+				  int length);
+
 #ifdef __cplusplus
 }
 #endif

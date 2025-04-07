@@ -22,32 +22,29 @@ static char file_buffer[MAX_FILE_SIZE];
 static unsigned int file_offset = 0;
 static unsigned int expected_file_size = 0;
 static int expecting_header = 1;
-static int global_data_in_samples = 0;
+//static int global_data_in_samples = 0;
 
 /* Arrays for ESN Equations */
 static float w_in[WIN_MAX];
 static float w_x[WX_MAX];
 static float w_out[WOUT_MAX];
-//static float data_in[NUM_INPUTS * SAMPLES];
+static float golden_data_out[DATA_OUT_MAX];
+static int golden_sample_count = 0;
+
 static float *data_in = NULL;
 static int data_in_count = 0;  // Total number of floats parsed
+//static float *data_out = NULL;
+//static int data_out_count = 0;
 
 /* Flags to track readiness */
 static int w_in_ready = 0;
 static int w_x_ready = 0;
 static int w_out_ready = 0;
-static int data_in_ready = 0;
+static int golden_data_out_ready = 0;
 
-//static void run_esn_calculation(void);
-//static void reset_arrays(void);
-//static void reset_data_in(void);
-
-///* Define a struct to match file header (packed) */
-//typedef struct __attribute__((__packed__)) {
-//    char file_id[8];
-//    uint32_t file_size;
-//    char reserved[4];
-//} file_header_t;
+// Keep state_pre consistent between chunks
+static float state_pre[NUM_NEURONS] = {0};
+static int total_samples_processed = 0;    // cumulative sample count
 
 ///* Init function to reset global state */
 void tcp_file_init(void)
@@ -56,6 +53,14 @@ void tcp_file_init(void)
     file_offset = 0;
     expected_file_size = 0;
     expecting_header = 1;
+}
+
+static void print_scientific(float val)
+{
+    char buf[32];  // Buffer size for the formatted string.
+    // Format the float in scientific notation (exponent form).
+    sprintf(buf, "%e", val);
+    xil_printf("%s", buf);
 }
 
 /* Helper function for FP value printing (6 decimal places) */
@@ -96,42 +101,72 @@ void print_float_array(const float *arr, int total_count, int max_to_print)
     xil_printf("\n\r");
 }
 
+///* Helper function to read lines or space-delimited values from the buffer and convert to FP values */
+//int parse_floats_into_array(const char *raw_text,
+//                                   unsigned int text_len,
+//                                   float *dest_array,
+//                                   unsigned int max_count)
+//{
+//	// Allocate a temporary buffer to hold the complete raw text plus a null terminator.
+//    char *local_buf = (char *)malloc(text_len + 1);
+//    if (local_buf == NULL) {
+//        xil_printf("Error: Could not allocate memory for parsing.\n\r");
+//        return 0;
+//    }
+//
+//    // Copy the raw text into the temporary buffer.
+//    memcpy(local_buf, raw_text, text_len);
+//    local_buf[text_len] = '\0';  // Null-terminate the buffer
+//
+//    unsigned int count = 0;
+//    // Tokenize the buffer using newline ("\n") as the delimiter.
+//    // Each token (line) should represent one float value in ASCII.
+//    char *line = strtok(local_buf, "\n");
+//    while (line && count < max_count) {
+//        float val = 0.0f;
+//        // Use sscanf to parse a float from the current line.
+//        // If the conversion is successful (sscanf returns 1), store the value in dest_array.
+//        if (sscanf(line, "%f", &val) == 1) {
+//            dest_array[count++] = val;
+//        }
+//        // Nezt token
+//        line = strtok(NULL, "\n");
+//    }
+//    xil_printf("Parsed %d floats into array.\n\r", count);
+//    // Free temp buffer
+//    free(local_buf);
+//    return count;
+//}
+
 /* Helper function to read lines or space-delimited values from the buffer and convert to FP values */
 int parse_floats_into_array(const char *raw_text,
                                    unsigned int text_len,
                                    float *dest_array,
                                    unsigned int max_count)
 {
-	// Allocate a temporary buffer to hold the complete raw text plus a null terminator.
-    char *local_buf = (char *)malloc(text_len + 1);
-    if (local_buf == NULL) {
-        xil_printf("Error: Could not allocate memory for parsing.\n\r");
+    // Instead of malloc, use a static buffer (make sure it's large enough)
+    static char static_buf[250000]; // Allocate 250k bytes; adjust size as needed.
+    if (text_len >= sizeof(static_buf)) {
+        xil_printf("Error: File too large for static buffer.\n\r");
         return 0;
     }
 
-    // Copy the raw text into the temporary buffer.
-    memcpy(local_buf, raw_text, text_len);
-    local_buf[text_len] = '\0';  // Null-terminate the buffer
+    memcpy(static_buf, raw_text, text_len);
+    static_buf[text_len] = '\0';  // Null-terminate the buffer
 
     unsigned int count = 0;
-    // Tokenize the buffer using newline ("\n") as the delimiter.
-    // Each token (line) should represent one float value in ASCII.
-    char *line = strtok(local_buf, "\n");
+    char *line = strtok(static_buf, "\n");
     while (line && count < max_count) {
         float val = 0.0f;
-        // Use sscanf to parse a float from the current line.
-        // If the conversion is successful (sscanf returns 1), store the value in dest_array.
         if (sscanf(line, "%f", &val) == 1) {
             dest_array[count++] = val;
         }
-        // Nezt token
         line = strtok(NULL, "\n");
     }
-    xil_printf("Parsed %d floats into array.\n\r", count);
-    // Free temp buffer
-    free(local_buf);
+//    xil_printf("Parsed %d floats into array.\n\r", count);
     return count;
 }
+
 
 
 /* The actual TCP callback function (called in tcp_perf_server.c) */
@@ -139,7 +174,7 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
 	// If not packet is recieved, connection has been closed by client
     if (!p) {
-        xil_printf("Client closed connection.\r\n");
+//        xil_printf("Client closed connection.\r\n");
         tcp_close(tpcb);
         return ERR_OK;
     }
@@ -191,7 +226,7 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if (!expecting_header &&
         file_offset >= (HEADER_SIZE + expected_file_size)) {
 
-        xil_printf("Full file received, size: %u\n\r", expected_file_size);
+//        xil_printf("Full file received, size: %u\n\r", expected_file_size);
 
         /* Re-interpret the header to get the file ID */
         file_header_t *hdr = (file_header_t*)file_buffer;
@@ -264,23 +299,47 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
             data_in_count = total_floats;
             int num_samples = total_floats / NUM_INPUTS;
             xil_printf("DATAIN file: parsed %d floats, which is %d sample(s)\n\r", total_floats, num_samples);
-            data_in_ready = 1;
+//            data_in_ready = 1;
 
-            // Optionally, store num_samples in a global variable for later use:
-             global_data_in_samples = num_samples;
+//            // Optionally, store num_samples in a global variable for later use:
+//            global_data_in_samples = num_samples;
+
+            run_esn_calculation(num_samples);
         }
-//        else if (strncmp(hdr->file_id, "CMD_ESN_", 8) == 0) {
-//            // This triggers ESN calculation
-//            run_esn_calculation();
-//        }
-//        else if (strncmp(hdr->file_id, "CMD_RST_", 8) == 0) {
-//        	xil_printf("Received CMD_RST_: Resetting all arrays...\n\r");
-//        	reset_arrays();
-//        }
-//        else if (strncmp(hdr->file_id, "CMD_RDI_", 8) == 0) {
-//        	xil_printf("Received CMD_RDI_: Resetting DATAIN...\n\r");
-//        	reset_data_in();
-//        }
+        else if (strncmp(hdr->file_id, "DATAOUT_", 8) == 0) {
+        	// In your DATAOUT branch (in tcp_recv_file or a separate routine):
+        	int total_floats = parse_floats_into_array(&file_buffer[HEADER_SIZE],
+        	                                            expected_file_size,
+        	                                            golden_data_out,
+        	                                            DATA_OUT_MAX);
+        	golden_sample_count = total_floats / NUM_OUTPUTS;
+        	xil_printf("Golden DATAOUT file: parsed %d floats, which is %d sample(s)\n\r", total_floats, golden_sample_count);
+//            // Allocate memory for data_in dynamically
+//            int max_possible_floats = expected_file_size / 8;
+//            if (data_out != NULL) {
+//                free(data_out);
+//            }
+//            data_out = (float *)malloc(sizeof(float) * max_possible_floats);
+//            if (data_out == NULL) {
+//                xil_printf("Error: Unable to allocate memory for data_out.\n\r");
+//                return ERR_MEM;
+//            }
+//
+//            // Now parse the floats into data_out.
+//            int total_floats = parse_floats_into_array(
+//                &file_buffer[HEADER_SIZE],
+//                expected_file_size,
+//                data_out,
+//                max_possible_floats
+//            );
+//            data_out_count = total_floats;
+//            xil_printf("DATAOUT file: parsed %d floats", total_floats);
+
+            /* OPTIONAL: Print first 10 elements of w_in[] to verify */
+//            print_float_array(golden_data_out, DATA_OUT_MAX, 10);
+
+            golden_data_out_ready = 1;
+        }
         /* Reset for the next file */
         file_offset = 0;
         expected_file_size = 0;
@@ -293,11 +352,11 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 }
 
 /* ESN core calling function with error checking */
-void run_esn_calculation(void)
+void run_esn_calculation(int num_samples_in_chunk)
 {
     /* Check if each required file/array is ready. If not, say so. */
     int missing = 0;
-    if (!w_in_ready || !w_x_ready || !w_out_ready || !data_in_ready) {
+    if (!w_in_ready || !w_x_ready || !w_out_ready || !golden_data_out_ready) {
         xil_printf("Cannot run ESN. The following files are missing:\n\r");
         if (!w_in_ready) {
             xil_printf("  - w_in.dat (WIN_____)\n\r");
@@ -311,28 +370,33 @@ void run_esn_calculation(void)
             xil_printf("  - w_out.dat (WOUT____)\n\r");
             missing++;
         }
-        if (!data_in_ready) {
-            xil_printf("  - data_in file (DATAIN__)\n\r");
+        if (!golden_data_out_ready) {
+            xil_printf("  - golden_data_out file (DATAOUT_)\n\r");
             missing++;
         }
         xil_printf("Total missing: %d file(s).\n\r", missing);
         return;
     }
 
-    xil_printf("Running ESN on the loaded arrays (%d samples)...\n\r", global_data_in_samples);
+//    xil_printf("Running ESN");
 
-    // Create ESN arrays
-    float state_pre[NUM_NEURONS] = {0};
+    // Create ESN arrays (can be reset from chunk to chunk)
     float res_state[NUM_NEURONS];
     float state_extended[NUM_INPUTS + NUM_NEURONS];
     float data_out[NUM_OUTPUTS];
 
-    for (int sample = 0; sample < global_data_in_samples; sample++) {
+    // For overall error accumulation:
+    float total_mse = 0.0f;
+    int samples_compared = 0;
+
+    for (int sample = 0; sample < num_samples_in_chunk; sample++) {
+        // Pointer to current sample in the new chunk data_in
         float *current_sample = &data_in[sample * NUM_INPUTS];
 
+        // Process current sample using the persistent state_pre
         update_state(w_in, current_sample, w_x, state_pre, res_state);
 
-        // Update state_pre for the next sample:
+        // Update state_pre for the next sample
         for (int i = 0; i < NUM_NEURONS; i++) {
             state_pre[i] = res_state[i];
         }
@@ -340,17 +404,44 @@ void run_esn_calculation(void)
         form_state_extended(current_sample, res_state, state_extended);
         compute_output(w_out, state_extended, data_out);
 
-        // Print the output vector (using 6-decimal printing helper)
-        xil_printf("Sample %d: y_out = [", sample);
+        // Optionally, print output
+        xil_printf("Sample %d: y_out = [", (total_samples_processed + sample + 1));
         for (int i = 0; i < NUM_OUTPUTS; i++) {
             print_fixed_6(data_out[i]);
             if (i < NUM_OUTPUTS - 1)
                 xil_printf(", ");
         }
         xil_printf("]\n\r");
+
+        // Compare output with golden output for the current sample, if available
+        if ((total_samples_processed + sample) < golden_sample_count) {
+            // Pointer to the corresponding golden output (4 floats per sample)
+            float *golden_sample = &golden_data_out[(total_samples_processed + sample) * NUM_OUTPUTS];
+            float mse = compute_mse(data_out, golden_sample, NUM_OUTPUTS);
+//            xil_printf("MSE = ", (total_samples_processed + sample));
+//            print_scientific(mse);
+//            xil_printf("\n\r");
+
+            total_mse += mse;
+            samples_compared++;
+        } else {
+            xil_printf("No golden output available for sample %d.\n\r", sample);
+        }
     }
 
-    xil_printf("ESN computation complete.\n\r");
+    // If at least one sample was compared, print the average MSE.
+    if (samples_compared > 0) {
+        float avg_mse = total_mse / samples_compared;
+        xil_printf("Average MSE over %d sample(s): ", samples_compared);
+        print_scientific(avg_mse);
+        xil_printf("\n\r");
+    } else {
+        xil_printf("No samples were compared with golden data.\n\r");
+    }
+
+    total_samples_processed += num_samples_in_chunk;
+    xil_printf("Chunk processed. Total samples processed: %d\n\r", total_samples_processed);
+//    xil_printf("ESN computation complete.\n\r");
 }
 
 /* Soft reset function */
@@ -360,11 +451,13 @@ void reset_arrays(void)
     w_in_ready = 0;
     w_x_ready = 0;
     w_out_ready = 0;
-    data_in_ready = 0;
+    golden_data_out_ready = 0;
 
     /* Clear static arrays for matrices */
     memset(w_in, 0, sizeof(w_in));
     memset(w_x, 0, sizeof(w_x));
+    memset(w_out, 0, sizeof(w_out));
+    memset(state_pre, 0, sizeof(state_pre));
     memset(w_out, 0, sizeof(w_out));
 
     /* Free dynamic data_in if allocated */
@@ -373,6 +466,7 @@ void reset_arrays(void)
         data_in = NULL;
     }
     data_in_count = 0;
+    total_samples_processed = 0;
 
     xil_printf("Soft reset complete. Arrays cleared.\n\r");
 }
@@ -385,8 +479,10 @@ void reset_data_in(void)
         data_in = NULL;
     }
     data_in_count = 0;
-    global_data_in_samples = 0;
-    data_in_ready = 0;
+    total_samples_processed = 0;
+    memset(state_pre, 0, sizeof(state_pre));
+//    global_data_in_samples = 0;
+//    data_in_ready = 0;
     xil_printf("DATAIN reset complete. DATAIN array cleared.\n\r");
 }
 
