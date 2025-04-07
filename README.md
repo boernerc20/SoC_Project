@@ -10,11 +10,13 @@ This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s proces
    cd SoC_Project
 2. **Import Project into Vitis**
 - Launch **Vitis IDE**.
-- Go to **File > Import > Import projects from Git > Navigate to `ZC702_File` Project**.
+- Go to **File > Import > Import projects from Git > Existing local repository > Navigate to `ZC702_File` Project**.
 - Select the project and click **Finish**.
-- When prompted for the hardware platform:
+- For Application Project Settings:
   - Select `base_ps_wrapper.xsa` from the Vivado export located in the `zc702_soc` folder.
   - Make sure it matches your target hardware.
+
+
 3. **Open a UART Serial Terminal for Debugging**
 - Check what COM port the USB-UART cable is connected to
 - Minicom for example (PORT would be the actual UART debugger port):
@@ -67,7 +69,7 @@ The hardware and bitstream were synthesized/implemented using Vivado 2023.2. `zc
 </p>
 
 ## FPGA Board Code Functionality
-The board firmware is designed to run on the ZC702 FPGA evaluation board with a Zynq-7000 SoC. It integrates Ethernet communication via the lwIP TCP/IP stack and an Echo State Network (ESN) core for data processing. The TCP/IP stack was created by Xilinx with these files modified or created: `esn_core.h`, `esn_core.c`, `main.c`, `tcp_file.h`, `tcp_file.c`, and `tcp_perf_server.c`. Below is a detailed overview of its operation:
+The board firmware is designed to run on the ZC702 FPGA evaluation board with a Zynq-7000 SoC. It integrates Ethernet communication via the lwIP TCP/IP stack and an Echo State Network (ESN) core for data processing. The TCP/IP stack was created by Xilinx with these files modified or created: `esn_core.h`, `esn_core.c`, `main.c`, `tcp_file.h`,`tcp_command.h`, `tcp_command.c`, `tcp_file.c`, and `tcp_perf_server.c`. Below is a detailed overview of its operation:
 
 1. **Network Initialization**
    - **Ethernet Setup:**  
@@ -87,12 +89,14 @@ The board firmware is designed to run on the ZC702 FPGA evaluation board with a 
        Data is stored in fixed static arrays.
      - **DATAIN File:**  
        Data is stored in a dynamically allocated array (using `malloc`). The parser reads the entire file and converts ASCII-encoded floats into binary float values.
+     - **DATAOUT File:**  
+       Golden data_out file is stored in static array (size: 4 outputs * 6400 samples) to compare y_out of ESN core with and calculate MSE.
    - **Sample Count Determination:**  
      For the DATAIN file, the total number of floats is divided by the number of inputs per sample (40) to determine how many samples are contained in the file. This enables processing of one sample for 40 floats, two samples for 80 floats, etc.
 
 3. **Command Handling and Reset Functionality**
    - **Command Identification:**  
-     Special header IDs (e.g., `"CMD_ESN_"` for running the ESN and `"CMD_RDI_"` for resetting the DATAIN array) are used to trigger board-side commands. They are sent to the board in the form of dummy files (in `data/` folder).
+     A second port (5002) is opened on the TCP server to process commands from the Python script. The user can send reset commands to process different data or use different matrices.
    - **Selective Reset:**  
      A soft reset function clears only the DATAIN array (freeing dynamic memory and resetting related flags), while leaving the matrix files intact. This allows new DATAIN files to be loaded without re-sending the unchanged matrices.
 
@@ -109,7 +113,7 @@ The board firmware is designed to run on the ZC702 FPGA evaluation board with a 
    - **Sample-by-Sample Processing:**  
        For DATAIN files containing multiple samples, the firmware iterates over each sample. It updates the reservoir state for each sample—using the output of the previous sample as the new `state_pre`—and computes the ESN output.
    - **Output Verification:**  
-     Computed output vectors (4 values per sample) are printed via UART. Custom printing functions format the floats to six decimal places for clear diagnostic output.
+     Computed output vectors (4 values per sample) are printed via UART. Custom printing functions format the floats to six decimal places for clear diagnostic output. The average MSE between the final y_out and golden solution is also printed.
 
 ## Python Client Script Functionality
 
@@ -117,13 +121,13 @@ The Python client script is designed to interactively send various files and com
 
 1. **Interactive Menu:**  
    - Presents options to send matrix files (w_in.dat, w_x.dat, w_out.dat) individually or all together.
-   - Allows sending a DATAIN file containing multiple samples.
-   - Includes commands to trigger the ESN computation and to reset only the DATAIN data on the board.
+   - Allows sending a DATAIN file all at once or in pre-defined chunks.
+   - Once DATAIN is recieved the ESN core computes y_out
 
-2. **TCP-Based File Transfer:**  
+2. **TCP-Based Communication:**  
    - Establishes a TCP connection to the board’s fixed IP (default: 192.168.1.10) on port 5001.
    - For file transfers, it constructs a header (8-byte file ID, 4-byte file size, 4 reserved bytes) and sends the file content followed by an EOF marker.
-   - For commands (e.g., “ESN” or “RDI”), it sends a small file with a command header to the board. (Planning to open a seperate TCP port to avoid creating seperate files)
+   - For commands (e.g. RDI), they are sent over the second TCP port (5002).
 
 3. **Status Feedback:**  
    - Displays connection status and confirmation messages on the console to indicate when files or commands are successfully sent.
