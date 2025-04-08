@@ -52,6 +52,9 @@ This project implements an Echo-State Network (ESN) on the ZC702 FPGA’s proces
    ping 192.168.1.10
 6. **Run Python Script**
 - Navigate to `data` folder in `SoC_Project`.
+- Activate virtual enviornment `venv`. On Linux:
+  ```bash
+  source venv/bin/activate
 - Run script:
    ```bash
    ./transmit_data.py
