@@ -36,7 +36,8 @@
 /** Connection handle for a TCP Server session */
 
 #include "tcp_perf_server.h"
-#include "tcp_file.h"
+
+#include "esn_main.h"
 
 extern struct netif server_netif;
 

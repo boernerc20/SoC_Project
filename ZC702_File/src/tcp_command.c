@@ -48,9 +48,17 @@ static err_t cmd_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
 //    }
     if (strncmp(cmd_buf, "RESET", 5) == 0) {
         reset_arrays();
-    } else if (strncmp(cmd_buf, "RDI", 3) == 0) {
+    }
+    else if (strncmp(cmd_buf, "RDI", 3) == 0) {
         reset_data_in();
-    } else {
+    }
+    else if (strncmp(cmd_buf, "TRN_ON", 6) == 0) {
+    	enable_training();
+    }
+    else if (strncmp(cmd_buf, "TRN_OFF", 7) == 0) {
+    	disable_training();
+    }
+    else {
         xil_printf("Unknown command received.\n\r");
     }
 

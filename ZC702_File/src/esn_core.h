@@ -14,6 +14,8 @@ extern "C" {
 #define NUM_OUTPUTS 4	 /* data output size */
 #define NUM_NEURONS 8    /* reservoir (hidden) layer size */
 
+#define EXTENDED_STATE_SIZE (NUM_INPUTS + NUM_NEURONS)
+
 /*
  * update_state()
  *   - W_in:    Flattened input weight matrix of size (NUM_NEURONS * NUM_INPUTS)

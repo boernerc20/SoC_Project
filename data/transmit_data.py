@@ -108,6 +108,7 @@ def main():
         print("\nMain Menu:")
         print("m - Send matrix file(s)")
         print("d - Send golden data_out file")
+        print("t - Turn training ON/OFF (starts OFF)")
         print("e - Run ESN (select data_in)")
         print("r - Soft reset board (all or just data)")
         print("q - Quit")
@@ -118,8 +119,9 @@ def main():
             print("a - Send w_in.dat")
             print("b - Send w_x.dat")
             print("c - Send w_out.dat")
-            print("d - Send all three matrix files (w_in, w_x, w_out)")
-            matrix_choice = input("Enter your option (a/b/c/d): ").strip().lower()
+            print("d - Send w_in and w_x (if training w_out)")
+            print("e - Send all three matrix files (w_in, w_x, w_out)")
+            matrix_choice = input("Enter your option (a/b/c/d/e): ").strip().lower()
 
             if matrix_choice == 'a':
                 send_file_tcp(board_ip, file_port, "w_in.dat",  "WIN_____")
@@ -128,6 +130,9 @@ def main():
             elif matrix_choice == 'c':
                 send_file_tcp(board_ip, file_port, "w_out.dat", "WOUT____")
             elif matrix_choice == 'd':
+                send_file_tcp(board_ip, file_port, "w_in.dat",  "WIN_____")
+                send_file_tcp(board_ip, file_port, "w_x.dat",   "WX______")
+            elif matrix_choice == 'e':
                 send_file_tcp(board_ip, file_port, "w_in.dat",  "WIN_____")
                 send_file_tcp(board_ip, file_port, "w_x.dat",   "WX______")
                 send_file_tcp(board_ip, file_port, "w_out.dat", "WOUT____")
@@ -140,6 +145,17 @@ def main():
                 print(f"File '{data_out_filename}' not found.")
                 data_out_filename = input("Please enter a valid DATAOUT filename: ").strip()
             send_file_tcp(board_ip, file_port, data_out_filename, "DATAOUT_")
+
+        elif choice == 't':
+            print("\nTraining options:")
+            print("1 - Turn training OFF")
+            print("2 - Turn training ON")
+            reset_choice = input("Enter your option (1/2): ").strip().lower()
+
+            if reset_choice == '1':
+                send_command(board_ip, cmd_port, "TRN_OFF")
+            elif reset_choice == '2':
+                send_command(board_ip, cmd_port, "TRN_ON")
 
         elif choice == 'e':
             print("\nESN options:")

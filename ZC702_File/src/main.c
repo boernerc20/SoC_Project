@@ -220,7 +220,8 @@ int main(void)
 	// Start the command reception application (TCP server on port 5002) */
 	start_command_server();
 
-	xil_printf("\r\n");
+	/* init training module */
+	init_rls();
 
 	while (1) {
 		if (TcpFastTmrFlag) {

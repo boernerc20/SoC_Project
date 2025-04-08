@@ -7,9 +7,10 @@ extern "C" {
 
 #include "lwip/tcp.h"
 #include "lwip/pbuf.h"
-#include "tcp_file.h"   // For run_esn_calculation(), reset_arrays(), reset_data_in(), etc.
+#include "esn_main.h"   // For run_esn_calculation(), reset_arrays(), reset_data_in(), etc.
 #include "esn_core.h"   // If any ESN functions are needed directly
 #include "xil_printf.h"
+#include "rls_training.h"
 #include <string.h>
 #include <stdlib.h>
 
