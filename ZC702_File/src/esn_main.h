@@ -13,7 +13,7 @@ extern "C" {
 #include <string.h> // for memcpy, memset
 
 /* Buffer size for File Reception Buffer */
-#define MAX_FILE_SIZE (3072 * 3072)  /* 3MB (assuming data_in is ~2.7 MB) */
+#define MAX_FILE_SIZE (3072 * 3072)  /* 3MB (can be adjusted) */
 
 /* The file header format:
  *  8 bytes for ID
@@ -23,17 +23,12 @@ extern "C" {
  */
 #define HEADER_SIZE 16
 
-#define SAMPLES         6400
+#define SAMPLES     5
 
-/* Expected integer counts for each file:
- *   - data_in:  40 elements (one sample)
- *   - w_in:     8*40  = 320 elements
- *   - w_x:      8*8   = 64 elements
- *   - w_out:    4*(40+8) = 192 elements
- */
-#define WIN_MAX     	(8 * 40)
-#define WX_MAX      	(8 * 8)
-#define WOUT_MAX    	(4 * (40 + 8))
+/* Expected integer counts for each file: */
+#define WIN_MAX     	(NUM_NEURONS * NUM_INPUTS)
+#define WX_MAX      	(NUM_NEURONS * NUM_NEURONS)
+#define WOUT_MAX    	(NUM_OUTPUTS * (NUM_INPUTS + NUM_NEURONS))
 #define DATA_OUT_MAX    (NUM_OUTPUTS * SAMPLES)
 
 /* Define a struct to match file header (packed) */

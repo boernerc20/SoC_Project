@@ -26,7 +26,7 @@ void init_rls(void)
         }
     }
 
-    xil_printf("RLS training module initialized.\n\r");
+    xil_printf("RLS training module initialized (OFF).\n\r");
 }
 
 /**

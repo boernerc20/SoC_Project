@@ -93,9 +93,9 @@ void compute_output(const float *W_out,
                     const float *state_extended,
                     float *data_out)
 {
-    /* Suppose you want 4 outputs.
-       If you have more or fewer, you can parametrize it or adjust code. */
-    const int output_dim = 4;
+    // Use the defined macro NUM_OUTPUTS instead of constant 4.
+    int output_dim = NUM_OUTPUTS;
+    // total = NUM_INPUTS + NUM_NEURONS, e.g., 128 + 8 = 136
     int total = NUM_INPUTS + NUM_NEURONS;
 
     for (int i = 0; i < output_dim; i++) {
@@ -105,6 +105,7 @@ void compute_output(const float *W_out,
         }
     }
 }
+
 
 /**
  * Computes the Mean Squared Error (MSE) between two arrays of floats.

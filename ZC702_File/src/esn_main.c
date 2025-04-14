@@ -95,7 +95,7 @@ void print_float_array(const float *arr, int total_count, int max_to_print)
     xil_printf("Printing up to %d elements (out of %d):\n\r", limit, total_count);
     for (int i = 0; i < limit; i++) {
         xil_printf("arr[%d] = ", i);
-        print_fixed_6(arr[i]);
+        print_scientific(arr[i]);
         xil_printf("\n\r");
     }
     xil_printf("\n\r");
@@ -365,7 +365,7 @@ void run_esn_calculation(int num_samples_in_chunk)
 {
     /* Check if each required file/array is ready. If not, say so. */
     int missing = 0;
-    if (!w_in_ready || !w_x_ready || !golden_data_out_ready) {
+    if (!w_in_ready || !w_x_ready) {
         xil_printf("Cannot run ESN. The following are missing:\n\r");
         if (!w_in_ready) {
             xil_printf("  - w_in.dat (WIN_____)\n\r");
@@ -375,10 +375,10 @@ void run_esn_calculation(int num_samples_in_chunk)
             xil_printf("  - w_x.dat (WX______)\n\r");
             missing++;
         }
-        if (!golden_data_out_ready) {
-            xil_printf("  - golden_data_out file (DATAOUT_)\n\r");
-            missing++;
-        }
+//        if (!golden_data_out_ready) {
+//            xil_printf("  - golden_data_out file (DATAOUT_)\n\r");
+//            missing++;
+//        }
         xil_printf("Total missing: %d file(s).\n\r", missing);
         return;
     }
@@ -397,9 +397,14 @@ void run_esn_calculation(int num_samples_in_chunk)
         float *current_sample = &data_in[sample * NUM_INPUTS];
         // Use the current updated W_out:
         float *current_W_out = get_W_out();
+//        print_float_array(current_W_out, WOUT_MAX, 10);
+
+//        print_float_array(state_pre, NUM_NEURONS, NUM_NEURONS);
 
         // Process current sample using the persistent state_pre
         update_state(w_in, current_sample, w_x, state_pre, res_state);
+
+//        print_float_array(res_state, NUM_NEURONS, NUM_NEURONS);
 
         // Update state_pre for the next sample
         for (int i = 0; i < NUM_NEURONS; i++) {
@@ -408,16 +413,19 @@ void run_esn_calculation(int num_samples_in_chunk)
 
         form_state_extended(current_sample, res_state, state_extended);
 
+//        print_float_array(state_extended, EXTENDED_STATE_SIZE, EXTENDED_STATE_SIZE);
+
         compute_output(current_W_out, state_extended, data_out);
 
         // Optionally, print output
-        xil_printf("Sample %d: y_out = [", (total_samples_processed + sample + 1));
-        for (int i = 0; i < NUM_OUTPUTS; i++) {
-            print_fixed_6(data_out[i]);
-            if (i < NUM_OUTPUTS - 1)
-                xil_printf(", ");
-        }
-        xil_printf("]\n\r");
+//        xil_printf("Sample %d: y_out = [", (total_samples_processed + sample + 1));
+//        for (int i = 0; i < NUM_OUTPUTS; i++) {
+//            print_fixed_6(data_out[i]);
+//            if (i < NUM_OUTPUTS - 1)
+//                xil_printf(", ");
+//        }
+//        xil_printf("]\n\r");
+        print_float_array(data_out, NUM_OUTPUTS, NUM_OUTPUTS);
 
         // Compare output with golden output for the current sample, if available
         if ((total_samples_processed + sample) < golden_sample_count) {
@@ -425,11 +433,17 @@ void run_esn_calculation(int num_samples_in_chunk)
             float *golden_sample = &golden_data_out[(total_samples_processed + sample) * NUM_OUTPUTS];
             float mse = compute_mse(data_out, golden_sample, NUM_OUTPUTS);
 
+            xil_printf("MSE for sample %d: ", (samples_compared + 1));
+            print_scientific(mse);
+            xil_printf("\n\r");
+
             total_mse += mse;
             samples_compared++;
 
             // Update the output weights using the online RLS training function.
             update_training_rls(state_extended, golden_sample);
+            float *new_W_out = get_W_out();
+            print_float_array(new_W_out, WOUT_MAX, 10);
         }
         else {
             xil_printf("No golden output available for sample %d.\n\r", sample);

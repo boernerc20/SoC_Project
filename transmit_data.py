@@ -4,21 +4,32 @@ import struct
 import time
 import os
 
+# Get the directory of this script
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Set FILE_PATH to "data/training_data" relative to the script's directory
+FILE_PATH = os.path.join(SCRIPT_DIR, "data", "training_data")
+
+print("Using FILE_PATH:", FILE_PATH)
+
 HEADER_FORMAT = "8sI4s"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 EOF_MARKER = b"<EOF>\n"
 
 def send_file_tcp(ip, port, filename, file_id):
     """Send a file over TCP with a header and EOF marker."""
+    # Construct the full path to the file.
+    full_path = os.path.join(FILE_PATH, filename)
+    
     # Attempt to open file
     while True:
         try:
-            with open(filename, "r") as f:
+            with open(full_path, "r") as f:
                 file_data = f.read()
             break
         except Exception as e:
-            print(f"Error reading '{filename}': {e}")
-            filename = input("Please enter a valid filename: ").strip()
+            print(f"Error reading '{full_path}': {e}")
+            full_path = input("Please enter a valid full path filename: ").strip()
 
     file_bytes = file_data.encode('ascii')
     file_size = len(file_bytes)
@@ -34,14 +45,10 @@ def send_file_tcp(ip, port, filename, file_id):
         print(f"Connecting to {ip}:{port}...")
         s.connect((ip, port))
         print("Connected. Sending header, file data, and EOF marker.")
-
-        # Send header
         s.sendall(header)
         time.sleep(0.1)
-        # Send file content
         s.sendall(file_bytes)
         time.sleep(0.1)
-        # Send EOF marker
         s.sendall(EOF_MARKER)
         time.sleep(0.1)
 
@@ -69,14 +76,13 @@ def send_data_in_file_in_chunks(ip, port, filename, samples_per_chunk=10):
        Each chunk consists of (samples_per_chunk * NUM_INPUTS) floats.
        Assumes one float per line.
     """
-    with open(filename, "r") as f:
+    full_path = os.path.join(FILE_PATH, filename)
+    with open(full_path, "r") as f:
         lines = f.readlines()
     
-    # Each sample is 40 floats (NUM_INPUTS)
     NUM_INPUTS = 40
     chunk_size = samples_per_chunk * NUM_INPUTS
     
-    # Partition lines into chunks
     total_lines = len(lines)
     num_chunks = (total_lines + chunk_size - 1) // chunk_size
     
@@ -87,12 +93,10 @@ def send_data_in_file_in_chunks(ip, port, filename, samples_per_chunk=10):
         end = min(start + chunk_size, total_lines)
         chunk_data = "".join(lines[start:end])
         send_chunk(ip, port, chunk_data, "DATAIN__")
-        
-        # Option 1: Wait for a fixed interval (e.g., 1 second) before sending next chunk.
         time.sleep(0.5)
-        # Option 2: (If board sends a confirmation message, wait for it here.)
 
 def send_command(ip, port, cmd):
+    """Sends a command over TCP."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((ip, port))
         s.sendall(cmd.encode('ascii'))
@@ -101,14 +105,14 @@ def send_command(ip, port, cmd):
 
 def main():
     board_ip = "192.168.1.10"  # IP for board (host)
-    file_port = 5001          # TCP port on the ZC702
-    cmd_port = 5002             # Port for command interactions
+    file_port = 5001           # TCP port on the ZC702
+    cmd_port = 5002            # Port for command interactions
 
     while True:
         print("\nMain Menu:")
         print("m - Send matrix file(s)")
         print("d - Send golden data_out file")
-        print("t - Turn training ON/OFF (starts OFF)")
+        print("t - Toggle training (on/off)")
         print("e - Run ESN (select data_in)")
         print("r - Soft reset board (all or just data)")
         print("q - Quit")
@@ -124,25 +128,25 @@ def main():
             matrix_choice = input("Enter your option (a/b/c/d/e): ").strip().lower()
 
             if matrix_choice == 'a':
-                send_file_tcp(board_ip, file_port, "w_in.dat",  "WIN_____")
+                send_file_tcp(board_ip, file_port, "w_in.dat", "WIN_____")
             elif matrix_choice == 'b':
-                send_file_tcp(board_ip, file_port, "w_x.dat",   "WX______")
+                send_file_tcp(board_ip, file_port, "w_x.dat", "WX______")
             elif matrix_choice == 'c':
                 send_file_tcp(board_ip, file_port, "w_out.dat", "WOUT____")
             elif matrix_choice == 'd':
-                send_file_tcp(board_ip, file_port, "w_in.dat",  "WIN_____")
-                send_file_tcp(board_ip, file_port, "w_x.dat",   "WX______")
+                send_file_tcp(board_ip, file_port, "w_in.dat", "WIN_____")
+                send_file_tcp(board_ip, file_port, "w_x.dat", "WX______")
             elif matrix_choice == 'e':
-                send_file_tcp(board_ip, file_port, "w_in.dat",  "WIN_____")
-                send_file_tcp(board_ip, file_port, "w_x.dat",   "WX______")
+                send_file_tcp(board_ip, file_port, "w_in.dat", "WIN_____")
+                send_file_tcp(board_ip, file_port, "w_x.dat", "WX______")
                 send_file_tcp(board_ip, file_port, "w_out.dat", "WOUT____")
             else:
                 print("Invalid matrix file option. Please try again.")
 
         elif choice == 'd':
             data_out_filename = input("Enter the DATAOUT filename to send (e.g., data_out.dat): ").strip()
-            while not os.path.isfile(data_out_filename):
-                print(f"File '{data_out_filename}' not found.")
+            while not os.path.isfile(os.path.join(FILE_PATH, data_out_filename)):
+                print(f"File '{data_out_filename}' not found in {FILE_PATH}.")
                 data_out_filename = input("Please enter a valid DATAOUT filename: ").strip()
             send_file_tcp(board_ip, file_port, data_out_filename, "DATAOUT_")
 
@@ -165,16 +169,17 @@ def main():
 
             if esn_choice == '1':
                 data_filename = input("Enter the DATAIN filename to send (e.g., one_sample.dat): ").strip()
-                while not os.path.isfile(data_filename):
-                    print(f"File '{data_filename}' not found.")
+                while not os.path.isfile(os.path.join(FILE_PATH, data_filename)):
+                    print(f"File '{data_filename}' not found in {FILE_PATH}.")
                     data_filename = input("Please enter a valid DATAIN filename: ").strip()
                 send_file_tcp(board_ip, file_port, data_filename, "DATAIN___")
             elif esn_choice == '2':
                 data_filename = input("Enter the DATAIN filename to send (e.g., data_in.dat): ").strip()
-                while not os.path.isfile(data_filename):
-                    print(f"File '{data_filename}' not found.")
+                while not os.path.isfile(os.path.join(FILE_PATH, data_filename)):
+                    print(f"File '{data_filename}' not found in {FILE_PATH}.")
                     data_filename = input("Please enter a valid DATAIN filename: ").strip()
                 send_data_in_file_in_chunks(board_ip, file_port, data_filename, samples_per_chunk=10)
+
         elif choice == 'r':
             print("\nReset options:")
             print("1 - Reset everything")

@@ -11,7 +11,7 @@ extern "C" {
 #include <stdlib.h>
 
 /* Define the forgetting factor for RLS training */
-#define RLS_FORGETTING_FACTOR  0.9995f
+#define RLS_FORGETTING_FACTOR  0.999f
 
 /**
  * init_rls
