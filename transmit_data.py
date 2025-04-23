@@ -15,6 +15,7 @@ print("Using FILE_PATH:", FILE_PATH)
 HEADER_FORMAT = "8sI4s"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 EOF_MARKER = b"<EOF>\n"
+NUM_INPUTS = 128 # change this if needed
 
 def send_file_tcp(ip, port, filename, file_id):
     """Send a file over TCP with a header and EOF marker."""
@@ -80,7 +81,6 @@ def send_data_in_file_in_chunks(ip, port, filename, samples_per_chunk=10):
     with open(full_path, "r") as f:
         lines = f.readlines()
     
-    NUM_INPUTS = 40
     chunk_size = samples_per_chunk * NUM_INPUTS
     
     total_lines = len(lines)
