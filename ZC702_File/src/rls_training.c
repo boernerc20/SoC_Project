@@ -109,8 +109,6 @@ void update_training_rls(const float *z, const float *y_target)
                 k[i] * zTPsi[j]) / RLS_FORGETTING_FACTOR;
         }
     }
-
-//    xil_printf("RLS training update performed.\n\r");
 }
 
 void enable_training(void)

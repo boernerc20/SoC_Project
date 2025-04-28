@@ -47,64 +47,6 @@ void print_app_header(void)
 			TCP_CONN_PORT);
 }
 
-/** Close a tcp session */
-//static void tcp_server_close(struct tcp_pcb *pcb)
-//{
-//	err_t err;
-//
-//	if (pcb != NULL) {
-//		tcp_recv(pcb, NULL);
-//		tcp_err(pcb, NULL);
-//		err = tcp_close(pcb);
-//		if (err != ERR_OK) {
-//			/* Free memory with abort */
-//			tcp_abort(pcb);
-//		}
-//	}
-//}
-
-/** Error callback, tcp session aborted */
-//static void tcp_server_err(void *arg, err_t err)
-//{
-//	LWIP_UNUSED_ARG(err);
-//	u64_t now = get_time_ms();
-//	u64_t diff_ms = now - server.start_time;
-//	tcp_server_close(c_pcb);
-//	c_pcb = NULL;
-//	tcp_conn_report(diff_ms, TCP_ABORTED_REMOTE);
-//	xil_printf("TCP connection aborted\n\r");
-//}
-
-/* A simple echo callback */
-//static err_t tcp_recv_echo(void *arg, struct tcp_pcb *tpcb,
-//                           struct pbuf *p, err_t err)
-//{
-//    if (!p) {
-//        /* Connection closed by remote side */
-//        xil_printf("Client closed connection.\r\n");
-//        tcp_close(tpcb);  // Close from our side too
-//        return ERR_OK;
-//    }
-//    /* Print debug info */
-//    xil_printf("Received %d bytes\r\n", p->tot_len);
-//
-//    /* Echo the data back to sender: */
-//    err_t wr_err = tcp_write(tpcb, p->payload, p->tot_len, TCP_WRITE_FLAG_COPY);
-//    if (wr_err == ERR_OK) {
-//        /* Make sure to send immediately */
-//        tcp_output(tpcb);
-//    } else {
-//        xil_printf("tcp_write failed: %d\r\n", wr_err);
-//    }
-//
-//    /* We must tell lwIP we've taken the data */
-//    tcp_recved(tpcb, p->tot_len);
-//
-//    /* Free the pbuf */
-//    pbuf_free(p);
-//    return ERR_OK;
-//}
-
 static err_t tcp_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
     if ((err != ERR_OK) || (newpcb == NULL)) {

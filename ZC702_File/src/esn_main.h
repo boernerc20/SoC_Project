@@ -24,6 +24,7 @@ extern "C" {
  */
 #define HEADER_SIZE 16
 
+/* Sample Count: */
 #define SAMPLES     140
 
 /* Expected integer counts for each file: */
@@ -59,14 +60,6 @@ int parse_floats_into_array(const char *raw_text,
  *   - returns an lwIP err_t status.
  */
 err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-
-/*
- * tcp_file_init:
- *   Resets any global state for file reception,
- *   clearing buffers/flags. Call at startup or after a reset command.
- */
-
-
 
 /* ESN-Related Function Prototypes */
 void run_esn_calculation(int num_samples_in_chunk);

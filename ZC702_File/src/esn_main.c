@@ -4,14 +4,15 @@
  * Date: 04-01-2025
  *
  * Description:
- *	   Store files sent over Ethernet in a 2MB buffer and parse for ESN
- *	   equations.
+ *	   Store files sent over Ethernet in a 1MB buffer (from 3MB file buffer),
+ *	   parse the file's floating-point values, and run the ESN core.
  *
  *   Expected Files:
- *     - DATAIN file: 40 float values.
- *     - WIN file: 320 float values.
- *     - WX file:  64 float values.
- *     - WOUT file: 192 float values.
+ *     - DATAIN
+ *     - WIN
+ *     - WX
+ *     - WOUT
+ *     - GOLDEN SOLUTION
  *
  ******************************************************************************/
 
@@ -33,8 +34,6 @@ static int golden_sample_count = 0;
 
 static float *data_in = NULL;
 static int data_in_count = 0;  // Total number of floats parsed
-//static float *data_out = NULL;
-//static int data_out_count = 0;
 
 /* Flags to track readiness */
 static int w_in_ready = 0;
@@ -44,11 +43,11 @@ static int golden_data_out_ready = 0;
 
 // Keep state_pre consistent between chunks
 static float state_pre[NUM_NEURONS] = {0};
-static int total_samples_processed = 0;    // cumulative sample count
 
 // Performance metrics to keep consistent
 static float cumulative_mse     = 0.0f;
 static int   cumulative_samples = 0;
+static int total_samples_processed = 0;    // cumulative sample count
 
 ///* Init function to reset global state */
 void tcp_file_init(void)
@@ -62,6 +61,7 @@ void tcp_file_init(void)
 static void print_scientific(float val)
 {
     char buf[32];  // Buffer size for the formatted string.
+
     // Format the float in scientific notation (exponent form).
     sprintf(buf, "%e", val);
     xil_printf("%s", buf);
@@ -79,6 +79,7 @@ void print_fixed_6(float val)
     /* Separate integer and fraction */
     int iPart = (int)val;
     float frac = val - (float)iPart;
+
     /* Multiply fraction by 1,000,000 to get 6 decimal places */
     int fPart = (int)((frac * 1000000.0f) + 0.5f); /* rounding */
 
@@ -86,6 +87,7 @@ void print_fixed_6(float val)
     if (negative) {
         xil_printf("-");
     }
+
     /* Print integer part, then dot, then zero‐padded fraction */
     xil_printf("%d.%06d", iPart, fPart);
 }
@@ -96,7 +98,6 @@ void print_float_array(const float *arr, int total_count, int max_to_print)
     /* Decide how many elements to print: */
     int limit = (total_count < max_to_print) ? total_count : max_to_print;
 
-//    xil_printf("Printing up to %d elements (out of %d):\n\r", limit, total_count);
     for (int i = 0; i < limit; i++) {
         xil_printf("arr[%d] = ", i);
         print_scientific(arr[i]);
@@ -105,50 +106,13 @@ void print_float_array(const float *arr, int total_count, int max_to_print)
     xil_printf("\n\r");
 }
 
-///* Helper function to read lines or space-delimited values from the buffer and convert to FP values */
-//int parse_floats_into_array(const char *raw_text,
-//                                   unsigned int text_len,
-//                                   float *dest_array,
-//                                   unsigned int max_count)
-//{
-//	// Allocate a temporary buffer to hold the complete raw text plus a null terminator.
-//    char *local_buf = (char *)malloc(text_len + 1);
-//    if (local_buf == NULL) {
-//        xil_printf("Error: Could not allocate memory for parsing.\n\r");
-//        return 0;
-//    }
-//
-//    // Copy the raw text into the temporary buffer.
-//    memcpy(local_buf, raw_text, text_len);
-//    local_buf[text_len] = '\0';  // Null-terminate the buffer
-//
-//    unsigned int count = 0;
-//    // Tokenize the buffer using newline ("\n") as the delimiter.
-//    // Each token (line) should represent one float value in ASCII.
-//    char *line = strtok(local_buf, "\n");
-//    while (line && count < max_count) {
-//        float val = 0.0f;
-//        // Use sscanf to parse a float from the current line.
-//        // If the conversion is successful (sscanf returns 1), store the value in dest_array.
-//        if (sscanf(line, "%f", &val) == 1) {
-//            dest_array[count++] = val;
-//        }
-//        // Nezt token
-//        line = strtok(NULL, "\n");
-//    }
-//    xil_printf("Parsed %d floats into array.\n\r", count);
-//    // Free temp buffer
-//    free(local_buf);
-//    return count;
-//}
-
 /* Helper function to read lines or space-delimited values from the buffer and convert to FP values */
 int parse_floats_into_array(const char *raw_text,
                                    unsigned int text_len,
                                    float *dest_array,
                                    unsigned int max_count)
 {
-    // Using static buffer instead of malloc() for data_out
+    // Using static buffer instead of malloc() for data_out (heap was overflowing)
     static char static_buf[MAX_BUFFER_SIZE];
     if (text_len >= sizeof(static_buf)) {
         xil_printf("Error: File too large for static buffer.\n\r");
@@ -167,7 +131,6 @@ int parse_floats_into_array(const char *raw_text,
         }
         line = strtok(NULL, "\n");
     }
-//    xil_printf("Parsed %d floats into array.\n\r", count);
     return count;
 }
 
@@ -178,7 +141,6 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
 	// If not packet is recieved, connection has been closed by client
     if (!p) {
-//        xil_printf("Client closed connection.\r\n");
         tcp_close(tpcb);
         return ERR_OK;
     }
@@ -202,6 +164,7 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
         // Update buffer with # of bytes copied
         file_offset += copy_len;
+
         // Accumulate total # of bytes copied
         bytes_copied += copy_len;
 
@@ -230,8 +193,6 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if (!expecting_header &&
         file_offset >= (HEADER_SIZE + expected_file_size)) {
 
-//        xil_printf("Full file received, size: %u\n\r", expected_file_size);
-
         /* Re-interpret the header to get the file ID */
         file_header_t *hdr = (file_header_t*)file_buffer;
         char file_id_str[9];
@@ -240,10 +201,8 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
         /*
          * Now decide what to do based on file ID.
-         * (WIN_____, WX______, WOUT____, DATAIN__, CMD)
          */
         if (strncmp(hdr->file_id, "WIN_____", 8) == 0) {
-            // This is w_in.dat
             parse_floats_into_array(
                 &file_buffer[HEADER_SIZE],
                 expected_file_size,
@@ -251,12 +210,8 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
                 WIN_MAX
             );
             w_in_ready = 1;
-
-            /* OPTIONAL: Print first 10 elements of w_in[] to verify */
-//            print_float_array(w_in, WIN_MAX, 10);
         }
         else if (strncmp(hdr->file_id, "WX______", 8) == 0) {
-            // w_x
             parse_floats_into_array(
                 &file_buffer[HEADER_SIZE],
                 expected_file_size,
@@ -264,12 +219,8 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
                 WX_MAX
             );
             w_x_ready = 1;
-
-            /* OPTIONAL: Print first 10 elements of w_x[] */
-//            print_float_array(w_x, WX_MAX, 10);
         }
         else if (strncmp(hdr->file_id, "WOUT____", 8) == 0) {
-            // w_out
         	int parsedCount = parse_floats_into_array(
                 &file_buffer[HEADER_SIZE],
                 expected_file_size,
@@ -284,11 +235,6 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
             // Use the setter function to update the global W_out matrix.
             set_W_out(w_out);
-//            w_out_ready = 1;
-
-
-            /* OPTIONAL: Print first 10 elements of w_out[] */
-//            print_float_array(w_out, WOUT_MAX, 10);
         }
         else if (strncmp(hdr->file_id, "DATAIN__", 8) == 0) {
             // Allocate memory for data_in dynamically
@@ -312,11 +258,8 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
             data_in_count = total_floats;
             int num_samples = total_floats / NUM_INPUTS;
             xil_printf("DATAIN file: parsed %d floats, which is %d sample(s)\n\r", total_floats, num_samples);
-//            data_in_ready = 1;
 
-//            // Optionally, store num_samples in a global variable for later use:
-//            global_data_in_samples = num_samples;
-
+            /* RUN ESN */
             run_esn_calculation(num_samples);
         }
         else if (strncmp(hdr->file_id, "DATAOUT_", 8) == 0) {
@@ -327,32 +270,9 @@ err_t tcp_recv_file(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
         	                                            DATA_OUT_MAX);
         	golden_sample_count = total_floats / NUM_OUTPUTS;
         	xil_printf("Golden DATAOUT file: parsed %d floats, which is %d sample(s)\n\r", total_floats, golden_sample_count);
-//            // Allocate memory for data_in dynamically
-//            int max_possible_floats = expected_file_size / 8;
-//            if (data_out != NULL) {
-//                free(data_out);
-//            }
-//            data_out = (float *)malloc(sizeof(float) * max_possible_floats);
-//            if (data_out == NULL) {
-//                xil_printf("Error: Unable to allocate memory for data_out.\n\r");
-//                return ERR_MEM;
-//            }
-//
-//            // Now parse the floats into data_out.
-//            int total_floats = parse_floats_into_array(
-//                &file_buffer[HEADER_SIZE],
-//                expected_file_size,
-//                data_out,
-//                max_possible_floats
-//            );
-//            data_out_count = total_floats;
-//            xil_printf("DATAOUT file: parsed %d floats", total_floats);
-
-            /* OPTIONAL: Print first 10 elements of w_in[] to verify */
-//            print_float_array(golden_data_out, DATA_OUT_MAX, 10);
-
             golden_data_out_ready = 1;
         }
+
         /* Reset for the next file */
         file_offset = 0;
         expected_file_size = 0;
@@ -379,10 +299,6 @@ void run_esn_calculation(int num_samples_in_chunk)
             xil_printf("  - w_x.dat (WX______)\n\r");
             missing++;
         }
-//        if (!golden_data_out_ready) {
-//            xil_printf("  - golden_data_out file (DATAOUT_)\n\r");
-//            missing++;
-//        }
         xil_printf("Total missing: %d file(s).\n\r", missing);
         return;
     }
@@ -397,18 +313,15 @@ void run_esn_calculation(int num_samples_in_chunk)
     int samples_compared = 0;
 
     for (int sample = 0; sample < num_samples_in_chunk; sample++) {
-        // Pointer to current sample in the new chunk data_in
+
+    	// Pointer to current sample in the new chunk data_in
         float *current_sample = &data_in[sample * NUM_INPUTS];
+
         // Use the current updated W_out:
         float *current_W_out = get_W_out();
-//        print_float_array(current_W_out, WOUT_MAX, 10);
-
-//        print_float_array(state_pre, NUM_NEURONS, NUM_NEURONS);
 
         // Process current sample using the persistent state_pre
         update_state(w_in, current_sample, w_x, state_pre, res_state);
-
-//        print_float_array(res_state, NUM_NEURONS, NUM_NEURONS);
 
         // Update state_pre for the next sample
         for (int i = 0; i < NUM_NEURONS; i++) {
@@ -417,29 +330,14 @@ void run_esn_calculation(int num_samples_in_chunk)
 
         form_state_extended(current_sample, res_state, state_extended);
 
-//        print_float_array(state_extended, EXTENDED_STATE_SIZE, EXTENDED_STATE_SIZE);
-
         compute_output(current_W_out, state_extended, data_out);
-
-        // Optionally, print output
-//        xil_printf("Sample %d: y_out = [", (total_samples_processed + sample + 1));
-//        for (int i = 0; i < NUM_OUTPUTS; i++) {
-//            print_fixed_6(data_out[i]);
-//            if (i < NUM_OUTPUTS - 1)
-//                xil_printf(", ");
-//        }
-//        xil_printf("]\n\r");
-//        print_float_array(data_out, NUM_OUTPUTS, NUM_OUTPUTS);
 
         // Compare output with golden output for the current sample, if available
         if ((total_samples_processed + sample) < golden_sample_count) {
-            // Pointer to the corresponding golden output (4 floats per sample)
+
+        	// Pointer to the corresponding golden output (4 floats per sample)
             float *golden_sample = &golden_data_out[(total_samples_processed + sample) * NUM_OUTPUTS];
             float mse = compute_mse(data_out, golden_sample, NUM_OUTPUTS);
-
-//            xil_printf("MSE for sample %d: ", (samples_compared + 1));
-//            print_scientific(mse);
-//            xil_printf("\n\r");
 
             total_mse += mse;
             samples_compared++;
@@ -513,6 +411,8 @@ void reset_arrays(void)
         data_in = NULL;
     }
     data_in_count = 0;
+    cumulative_mse     = 0.0f;
+    cumulative_samples = 0;
     total_samples_processed = 0;
 
     disable_training();
