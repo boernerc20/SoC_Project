@@ -46,6 +46,10 @@ static int golden_data_out_ready = 0;
 static float state_pre[NUM_NEURONS] = {0};
 static int total_samples_processed = 0;    // cumulative sample count
 
+// Performance metrics to keep consistent
+static float cumulative_mse     = 0.0f;
+static int   cumulative_samples = 0;
+
 ///* Init function to reset global state */
 void tcp_file_init(void)
 {
@@ -92,7 +96,7 @@ void print_float_array(const float *arr, int total_count, int max_to_print)
     /* Decide how many elements to print: */
     int limit = (total_count < max_to_print) ? total_count : max_to_print;
 
-    xil_printf("Printing up to %d elements (out of %d):\n\r", limit, total_count);
+//    xil_printf("Printing up to %d elements (out of %d):\n\r", limit, total_count);
     for (int i = 0; i < limit; i++) {
         xil_printf("arr[%d] = ", i);
         print_scientific(arr[i]);
@@ -145,7 +149,7 @@ int parse_floats_into_array(const char *raw_text,
                                    unsigned int max_count)
 {
     // Using static buffer instead of malloc() for data_out
-    static char static_buf[250000]; // Allocate 250k bytes
+    static char static_buf[MAX_BUFFER_SIZE];
     if (text_len >= sizeof(static_buf)) {
         xil_printf("Error: File too large for static buffer.\n\r");
         return 0;
@@ -425,7 +429,7 @@ void run_esn_calculation(int num_samples_in_chunk)
 //                xil_printf(", ");
 //        }
 //        xil_printf("]\n\r");
-        print_float_array(data_out, NUM_OUTPUTS, NUM_OUTPUTS);
+//        print_float_array(data_out, NUM_OUTPUTS, NUM_OUTPUTS);
 
         // Compare output with golden output for the current sample, if available
         if ((total_samples_processed + sample) < golden_sample_count) {
@@ -433,9 +437,9 @@ void run_esn_calculation(int num_samples_in_chunk)
             float *golden_sample = &golden_data_out[(total_samples_processed + sample) * NUM_OUTPUTS];
             float mse = compute_mse(data_out, golden_sample, NUM_OUTPUTS);
 
-            xil_printf("MSE for sample %d: ", (samples_compared + 1));
-            print_scientific(mse);
-            xil_printf("\n\r");
+//            xil_printf("MSE for sample %d: ", (samples_compared + 1));
+//            print_scientific(mse);
+//            xil_printf("\n\r");
 
             total_mse += mse;
             samples_compared++;
@@ -443,25 +447,47 @@ void run_esn_calculation(int num_samples_in_chunk)
             // Update the output weights using the online RLS training function.
             update_training_rls(state_extended, golden_sample);
             float *new_W_out = get_W_out();
-            print_float_array(new_W_out, WOUT_MAX, 10);
+            xil_printf("Printing W_out_%d", (total_samples_processed + sample));
+            xil_printf("\n\r");
+            print_float_array(new_W_out, WOUT_MAX, 3);
         }
         else {
             xil_printf("No golden output available for sample %d.\n\r", sample);
         }
     }
 
-    // If at least one sample was compared, print the average MSE.
+    // batch results
     if (samples_compared > 0) {
         float avg_mse = total_mse / samples_compared;
-        xil_printf("Average MSE over %d sample(s): ", samples_compared);
+        xil_printf("Batch avg MSE over %d sample(s): ", samples_compared);
         print_scientific(avg_mse);
         xil_printf("\n\r");
+        float nmse_db = 10.0f * log10f(avg_mse);
+        xil_printf("Batch NMSE(dB): ");
+        print_scientific(nmse_db);
+        xil_printf("\n\r");
     } else {
-        xil_printf("No samples were compared with golden data.\n\r");
+        xil_printf("No samples compared in this chunk.\n\r");
+    }
+
+    // update and print file‐wise (cumulative) results
+    cumulative_mse     += total_mse;
+    cumulative_samples += samples_compared;
+
+    if (cumulative_samples > 0) {
+        float file_avg_mse = cumulative_mse / cumulative_samples;
+        xil_printf("Overall avg MSE over %d sample(s): ", cumulative_samples);
+        print_scientific(file_avg_mse);
+        xil_printf("\n\r");
+        float file_nmse_db = 10.0f * log10f(file_avg_mse);
+        xil_printf("Overall NMSE(dB): ");
+        print_scientific(file_nmse_db);
+        xil_printf("\n\r");
     }
 
     total_samples_processed += num_samples_in_chunk;
-    xil_printf("Chunk processed. Total samples processed: %d\n\r", total_samples_processed);
+    xil_printf("Chunk processed. Total samples processed: %d\n\r",
+               total_samples_processed);
 }
 
 /* Soft reset function */
@@ -504,8 +530,10 @@ void reset_data_in(void)
     data_in_count = 0;
     total_samples_processed = 0;
     memset(state_pre, 0, sizeof(state_pre));
-//    global_data_in_samples = 0;
-//    data_in_ready = 0;
+    cumulative_mse     = 0.0f;
+    cumulative_samples = 0;
+    total_samples_processed = 0;
+
     xil_printf("DATAIN reset complete. DATAIN array cleared.\n\r");
 }
 

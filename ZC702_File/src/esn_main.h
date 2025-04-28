@@ -13,7 +13,8 @@ extern "C" {
 #include <string.h> // for memcpy, memset
 
 /* Buffer size for File Reception Buffer */
-#define MAX_FILE_SIZE (3072 * 3072)  /* 3MB (can be adjusted) */
+#define MAX_FILE_SIZE   (3072 * 3072)  /* 3MB (can be adjusted) */
+#define MAX_BUFFER_SIZE (1024 * 1024)  /* 1MB (can be adjusted) */
 
 /* The file header format:
  *  8 bytes for ID
@@ -23,7 +24,7 @@ extern "C" {
  */
 #define HEADER_SIZE 16
 
-#define SAMPLES     5
+#define SAMPLES     140
 
 /* Expected integer counts for each file: */
 #define WIN_MAX     	(NUM_NEURONS * NUM_INPUTS)

@@ -110,7 +110,7 @@ void update_training_rls(const float *z, const float *y_target)
         }
     }
 
-    xil_printf("RLS training update performed.\n\r");
+//    xil_printf("RLS training update performed.\n\r");
 }
 
 void enable_training(void)
