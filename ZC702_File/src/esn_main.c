@@ -432,7 +432,6 @@ void reset_data_in(void)
     memset(state_pre, 0, sizeof(state_pre));
     cumulative_mse     = 0.0f;
     cumulative_samples = 0;
-    total_samples_processed = 0;
 
     xil_printf("DATAIN reset complete. DATAIN array cleared.\n\r");
 }
